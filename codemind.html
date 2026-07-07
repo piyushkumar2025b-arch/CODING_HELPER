@@ -1,0 +1,2274 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeMind — AI Coding Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"/>
+<link rel="stylesheet" href="css/codemind_neon_extra.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://unpkg.com/prettier@3.3.3/standalone.js"></script>
+<script src="https://unpkg.com/prettier@3.3.3/plugins/babel.js"></script>
+<script src="https://unpkg.com/prettier@3.3.3/plugins/html.js"></script>
+<script src="https://unpkg.com/prettier@3.3.3/plugins/typescript.js"></script>
+<script src="https://unpkg.com/prettier@3.3.3/plugins/postcss.js"></script>
+<style>
+:root {
+  --bg:#0a0a0f; --bg2:#111118; --bg3:#18181f; --border:#2a2a3a;
+  --accent:#00e5ff; --accent2:#7c3aed; --accent3:#10b981;
+  --warn:#f59e0b; --danger:#ef4444; --text:#e8e8f0; --muted:#6b6b80; --card:#14141c;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");opacity:.4;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:40px 40px;opacity:.15;}
+#app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;
+  border-bottom:1px solid var(--border);background:rgba(10,10,15,.95);backdrop-filter:blur(12px);flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;}
+.logo-text{font-size:17px;font-weight:800;letter-spacing:-.5px;}
+.logo-text span{color:var(--accent);}
+.header-right{display:flex;align-items:center;gap:10px;}
+.api-badge{display:flex;align-items:center;gap:6px;padding:5px 11px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:20px;font-size:11px;font-family:'JetBrains Mono',monospace;
+  cursor:pointer;transition:all .2s;}
+.api-badge:hover{border-color:var(--accent);color:var(--accent);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--danger);}
+.dot.connected{background:var(--accent3);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.lang-select{background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:5px 10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;outline:none;}
+.lang-select:focus{border-color:var(--accent);}
+
+/* MAIN */
+.main{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;border-right:1px solid var(--border);
+  background:var(--bg2);display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-section{padding:12px 10px 6px;}
+.sidebar-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+.mode-btn{width:100%;text-align:left;padding:7px 9px;border-radius:7px;background:transparent;border:none;
+  color:var(--muted);cursor:pointer;font-family:'Syne',sans-serif;font-size:12px;display:flex;align-items:center;gap:7px;
+  transition:all .15s;margin-bottom:2px;}
+.mode-btn:hover{background:var(--bg3);color:var(--text);}
+.mode-btn.active{background:rgba(0,229,255,.08);color:var(--accent);border:1px solid rgba(0,229,255,.2);}
+.mode-btn .icon{font-size:13px;width:17px;text-align:center;}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.lang-chip{padding:4px 5px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:5px;font-size:10px;font-family:'JetBrains Mono',monospace;
+  color:var(--muted);text-align:center;cursor:pointer;transition:all .15s;}
+.lang-chip:hover{border-color:var(--accent2);color:var(--text);}
+.lang-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.06);}
+.platform-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;}
+.plat-tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;
+  border:1px solid var(--border);background:var(--bg3);color:var(--muted);}
+.plat-tag.active-lc{border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,.08);}
+.plat-tag.active-cf{border-color:#3b82f6;color:#93c5fd;background:rgba(59,130,246,.08);}
+.plat-tag.active-gen{border-color:var(--accent3);color:var(--accent3);background:rgba(16,185,129,.08);}
+
+/* EDITOR AREA */
+.editor-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;overflow-x:auto;}
+.tab{padding:9px 16px;font-size:12px;cursor:pointer;border-right:1px solid var(--border);
+  color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:5px;font-weight:600;white-space:nowrap;}
+.tab:hover{color:var(--text);background:var(--bg3);}
+.tab.active{color:var(--accent);background:var(--bg);border-bottom:2px solid var(--accent);}
+.panel{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.panel.active{display:flex;}
+
+/* QUESTION PANEL */
+.question-panel{padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+.input-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:11px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  resize:vertical;outline:none;line-height:1.6;transition:border-color .2s;}
+textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.06);}
+.question-textarea{min-height:90px;}
+.code-textarea{min-height:140px;}
+.options-row{display:flex;gap:7px;flex-wrap:wrap;}
+.opt-btn{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Syne',sans-serif;}
+.opt-btn:hover{border-color:var(--accent2);color:var(--text);}
+.opt-btn.active{border-color:var(--accent2);background:rgba(124,58,237,.15);color:#c4b5fd;}
+.action-row{display:flex;gap:8px;}
+.btn{padding:9px 18px;border-radius:8px;border:none;font-family:'Syne',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;flex:1;}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,229,255,.2);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border);color:var(--text);}
+.btn-secondary:hover{border-color:var(--accent3);color:var(--accent3);}
+.btn-run{background:linear-gradient(135deg,#065f46,var(--accent3));color:#fff;}
+.btn-run:hover{opacity:.85;transform:translateY(-1px);}
+.btn-run:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-warn{background:linear-gradient(135deg,#78350f,var(--warn));color:#fff;}
+.btn-preview{background:linear-gradient(135deg,#1e3a5f,#3b82f6);color:#fff;}
+
+/* ===== CODE PANEL (split layout) ===== */
+.code-panel{display:flex;flex-direction:column;overflow:hidden;height:100%;}
+.code-split{display:flex;flex:1;overflow:hidden;min-height:0;}
+.editor-col{display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;}
+.preview-col{display:flex;flex-direction:column;border-left:1px solid var(--border);overflow:hidden;transition:width .2s;}
+.preview-col.hidden{width:0;border:none;overflow:hidden;}
+.preview-col.visible{width:45%;}
+
+/* EDITOR WRAP */
+.editor-top-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);
+  background:var(--bg2);flex-shrink:0;flex-wrap:wrap;}
+.editor-top-bar .input-label{margin:0;}
+.toolbar-right{margin-left:auto;display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.tbtn{padding:4px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);
+  font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:4px;}
+.tbtn:hover{color:var(--text);border-color:var(--muted);}
+.tbtn.run-btn{background:linear-gradient(135deg,#065f46,var(--accent3));color:#fff;border-color:transparent;}
+.tbtn.run-btn:hover{opacity:.85;}
+.tbtn.preview-btn{background:linear-gradient(135deg,#1e3a5f,#3b82f6);color:#fff;border-color:transparent;}
+.tbtn.debug-btn{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.3);}
+.tbtn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* CODE EDITOR */
+.editor-scroll{flex:1;overflow:hidden;position:relative;}
+#codeEditor{
+  width:100%;height:100%;background:var(--card);border:none;color:#abb2bf;
+  padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  resize:none;outline:none;line-height:1.75;tab-size:2;
+}
+#codeEditor:focus{outline:none;}
+
+/* STDIN BAR */
+.stdin-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);
+  background:var(--bg2);flex-shrink:0;}
+.stdin-bar label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
+.stdin-bar input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:4px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;}
+.stdin-bar input:focus{border-color:var(--accent);}
+
+/* OUTPUT PANEL */
+.output-panel{flex-shrink:0;border-top:1px solid var(--border);height:190px;display:flex;flex-direction:column;}
+.output-header{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.output-header-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.exec-meta{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.exec-badge{padding:1px 8px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.exec-ok{background:rgba(16,185,129,.15);color:#6ee7b7;}
+.exec-err{background:rgba(239,68,68,.15);color:#fca5a5;}
+.exec-warn{background:rgba(245,158,11,.15);color:#fcd34d;}
+.exec-info{background:rgba(0,229,255,.1);color:var(--accent);}
+.output-content{flex:1;overflow-y:auto;padding:10px 14px;}
+.output-box{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;white-space:pre-wrap;color:#a6e3a1;}
+.output-box.err-out{color:#f38ba8;}
+.output-box.warn-out{color:#fcd34d;}
+.output-box.muted-out{color:var(--muted);}
+
+/* PREVIEW PANEL */
+.preview-header{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);
+  border-bottom:1px solid var(--border);flex-shrink:0;}
+.preview-header-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.preview-close{margin-left:auto;padding:2px 8px;border-radius:4px;background:var(--bg3);
+  border:1px solid var(--border);color:var(--muted);font-size:10px;cursor:pointer;}
+.preview-close:hover{color:var(--danger);border-color:var(--danger);}
+#previewFrame{flex:1;width:100%;border:none;background:#fff;}
+
+/* RESPONSE PANEL */
+.response-panel{overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.ai-msg{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.ai-msg-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.ai-tag{padding:2px 10px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.tag-optimal{background:rgba(0,229,255,.12);color:var(--accent);border:1px solid rgba(0,229,255,.3);}
+.tag-brute{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.3);}
+.tag-debug{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.3);}
+.tag-explain{background:rgba(16,185,129,.12);color:var(--accent3);border:1px solid rgba(16,185,129,.3);}
+.tag-info{background:rgba(124,58,237,.12);color:#c4b5fd;border:1px solid rgba(124,58,237,.3);}
+.complexity-badges{display:flex;gap:6px;margin-left:auto;}
+.badge{padding:2px 8px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.badge-time{background:rgba(124,58,237,.15);color:#c4b5fd;}
+.badge-space{background:rgba(16,185,129,.15);color:#6ee7b7;}
+.ai-content{font-size:13px;line-height:1.75;color:var(--text);}
+.ai-content p{margin-bottom:8px;}
+.ai-content h3{font-size:14px;font-weight:700;color:var(--accent);margin:12px 0 6px;}
+.ai-content h4{font-size:13px;font-weight:700;color:#c4b5fd;margin:10px 0 4px;}
+.ai-content ul,.ai-content ol{padding-left:18px;margin-bottom:8px;}
+.ai-content li{margin-bottom:3px;}
+.ai-content strong{color:var(--accent);}
+.ai-content code{background:rgba(0,229,255,.08);color:var(--accent);padding:1px 6px;
+  border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;}
+.ai-content pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:12px;overflow-x:auto;margin:10px 0;position:relative;}
+.ai-content pre code{background:none;color:#abb2bf;padding:0;font-size:12px;border-radius:0;}
+.copy-btn{position:absolute;top:8px;right:8px;padding:3px 10px;border-radius:4px;background:var(--bg3);
+  border:1px solid var(--border);color:var(--muted);font-size:10px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;transition:all .15s;}
+.copy-btn:hover{color:var(--accent3);border-color:var(--accent3);}
+.use-code-btn{padding:3px 10px;border-radius:4px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);
+  color:var(--accent);font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .15s;margin-right:4px;}
+.use-code-btn:hover{background:rgba(0,229,255,.2);}
+.thinking-anim{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;padding:14px;}
+.thinking-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);animation:bounce .9s infinite;}
+.thinking-dots span:nth-child(2){animation-delay:.2s;}
+.thinking-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--muted);gap:12px;padding:40px;}
+.empty-icon{font-size:44px;opacity:.4;}
+.empty-text{font-size:13px;text-align:center;line-height:1.7;}
+.empty-text strong{color:var(--text);display:block;font-size:15px;margin-bottom:4px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(7px);
+  z-index:100;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:26px;width:420px;max-width:90vw;}
+.modal h2{font-size:19px;font-weight:800;margin-bottom:6px;}
+.modal p{color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:18px;}
+.modal input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:11px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  outline:none;margin-bottom:12px;transition:border-color .2s;}
+.modal input:focus{border-color:var(--accent);}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;}
+.model-note{font-size:11px;color:var(--muted);margin-bottom:12px;font-family:'JetBrains Mono',monospace;}
+.model-note span{color:var(--accent3);}
+
+/* RESIZER */
+.resizer{width:4px;background:var(--border);cursor:col-resize;flex-shrink:0;transition:background .15s;}
+.resizer:hover,.resizer.dragging{background:var(--accent2);}
+
+/* JUDGE0 KEY MODAL */
+#judge0Modal .modal{width:460px;}
+
+/* STATUS BAR */
+.status-bar{display:flex;align-items:center;gap:12px;padding:3px 14px;background:var(--bg2);
+  border-top:1px solid var(--border);flex-shrink:0;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);}
+.status-bar .sb-item{display:flex;align-items:center;gap:5px;}
+.status-bar .sb-lang{color:var(--accent);}
+.status-bar .sb-mode{color:#c4b5fd;}
+
+/* NPM SEARCH */
+.npm-search-wrap{padding:8px 10px;}
+.npm-input-row{display:flex;gap:5px;margin-bottom:6px;}
+.npm-input-row input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:4px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;}
+.npm-input-row input:focus{border-color:var(--accent);}
+.npm-input-row button{padding:4px 9px;border-radius:6px;border:none;background:var(--accent2);color:#fff;
+  font-size:11px;cursor:pointer;font-weight:700;}
+.npm-result{padding:5px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;
+  margin-bottom:4px;cursor:pointer;transition:border-color .15s;}
+.npm-result:hover{border-color:var(--accent);}
+.npm-result-name{font-size:11px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace;}
+.npm-result-desc{font-size:10px;color:var(--muted);margin-top:1px;line-height:1.4;}
+.npm-result-meta{font-size:9px;color:var(--accent3);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+
+/* REGEX TESTER */
+.regex-panel{padding:12px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;height:100%;}
+.regex-input-row{display:flex;gap:7px;align-items:center;}
+.regex-input-row input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--accent);
+  padding:7px 12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;}
+.regex-input-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.07);}
+.regex-flags{display:flex;gap:5px;}
+.flag-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+.flag-btn.active{border-color:var(--accent2);background:rgba(124,58,237,.15);color:#c4b5fd;}
+.regex-test-area{background:var(--bg3);border:1px solid var(--border);border-radius:9px;
+  padding:11px 13px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);
+  min-height:90px;outline:none;resize:vertical;line-height:1.7;}
+.regex-test-area:focus{border-color:var(--accent);}
+.regex-result-box{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px 13px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;min-height:60px;}
+.regex-match{background:rgba(0,229,255,.15);color:var(--accent);border-radius:3px;padding:0 2px;}
+.regex-stats{font-size:11px;color:var(--muted);margin-top:4px;}
+.regex-err{color:var(--danger);font-size:12px;}
+
+/* DIFF PANEL */
+.diff-panel{padding:12px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;height:100%;}
+.diff-cols{display:flex;gap:9px;flex:1;min-height:140px;}
+.diff-cols textarea{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:9px 11px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  resize:none;outline:none;line-height:1.6;}
+.diff-cols textarea:focus{border-color:var(--accent2);}
+.diff-output{background:var(--card);border:1px solid var(--border);border-radius:9px;
+  padding:12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;
+  overflow-y:auto;max-height:260px;white-space:pre-wrap;}
+.diff-add{color:#6ee7b7;background:rgba(16,185,129,.08);display:block;}
+.diff-rem{color:#f38ba8;background:rgba(239,68,68,.08);display:block;}
+.diff-same{color:var(--muted);display:block;}
+
+/* GIST MODAL */
+#gistModal .modal{width:480px;}
+.gist-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.gist-item{padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;
+  cursor:pointer;transition:border-color .15s;display:flex;align-items:center;justify-content:space-between;}
+.gist-item:hover{border-color:var(--accent);}
+.gist-item-name{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.gist-item-meta{font-size:10px;color:var(--muted);}
+.gist-load-btn{padding:2px 9px;border-radius:4px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);
+  color:var(--accent);font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+
+/* SCORE BADGE */
+.score-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:20px;
+  font-size:11px;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.score-a{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);}
+.score-b{background:rgba(0,229,255,.1);color:var(--accent);border:1px solid rgba(0,229,255,.3);}
+.score-c{background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.3);}
+.score-d{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.3);}
+
+/* FORMAT BTN */
+.tbtn.fmt-btn{background:rgba(124,58,237,.15);color:#c4b5fd;border-color:rgba(124,58,237,.3);}
+.tbtn.fmt-btn:hover{background:rgba(124,58,237,.3);}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+@media(max-width:700px){.sidebar{display:none;}header{padding:8px 12px;}}
+
+/* CHEATSHEET */
+.cheatsheet-panel{padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;height:100%;}
+.cs-lang-bar{display:flex;gap:6px;flex-wrap:wrap;}
+.cs-lang-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Syne',sans-serif;}
+.cs-lang-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.07);}
+.cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.cs-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;transition:border-color .15s;}
+.cs-card:hover{border-color:var(--accent2);}
+.cs-card-title{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;}
+.cs-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;cursor:pointer;padding:3px 5px;border-radius:5px;transition:background .15s;}
+.cs-item:hover{background:rgba(0,229,255,.06);}
+.cs-item-code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(0,229,255,.07);
+  padding:2px 7px;border-radius:4px;flex-shrink:0;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cs-item-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* STACKOVERFLOW */
+.so-panel{padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;height:100%;}
+.so-search-row{display:flex;gap:7px;align-items:center;}
+.so-search-row input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;}
+.so-search-row input:focus{border-color:var(--accent);}
+.so-filters{display:flex;gap:5px;flex-wrap:wrap;}
+.so-filter{padding:3px 11px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.so-filter.active{border-color:#f59e0b;color:#fcd34d;background:rgba(245,158,11,.08);}
+.so-result{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px 13px;
+  margin-bottom:7px;cursor:pointer;transition:border-color .15s;}
+.so-result:hover{border-color:var(--accent);}
+.so-result-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.so-result-title a{color:var(--text);text-decoration:none;}
+.so-result-title a:hover{color:var(--accent);}
+.so-result-meta{display:flex;gap:10px;font-size:10px;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;}
+.so-score{color:var(--accent3);}
+.so-answers{color:var(--warn);}
+.so-views{color:var(--muted);}
+.so-answered{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);
+  padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;}
+.so-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.so-tag{padding:1px 7px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);
+  border-radius:4px;font-size:9px;color:#93c5fd;font-family:'JetBrains Mono',monospace;}
+
+/* DEVTOOLS */
+.devtools-panel{padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;height:100%;}
+.devtools-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:900px){.devtools-grid{grid-template-columns:1fr;}}
+.dt-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;display:flex;flex-direction:column;gap:8px;}
+.dt-card-title{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:2px;}
+.dt-input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:8px 11px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;resize:vertical;}
+.dt-input:focus{border-color:var(--accent);}
+.dt-output{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 11px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent3);min-height:40px;
+  white-space:pre-wrap;word-break:break-all;line-height:1.6;}
+.dt-btn-row{display:flex;gap:6px;flex-wrap:wrap;}
+.dt-btn{padding:5px 13px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Syne',sans-serif;}
+.dt-btn:hover{border-color:var(--accent);color:var(--accent);}
+.dt-btn.active{background:rgba(0,229,255,.08);border-color:var(--accent);color:var(--accent);}
+/* Pomodoro */
+.pomodoro-display{text-align:center;padding:10px 0;}
+.pomo-time{font-size:42px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--accent);letter-spacing:2px;}
+.pomo-label{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.pomo-progress{width:100%;height:4px;background:var(--border);border-radius:4px;margin-top:8px;overflow:hidden;}
+.pomo-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 1s linear;border-radius:4px;}
+/* Color picker */
+.color-swatch{width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;}
+.color-formats{display:flex;flex-direction:column;gap:4px;}
+.color-fmt-row{display:flex;gap:6px;align-items:center;}
+.color-fmt-label{font-size:10px;font-weight:700;color:var(--muted);width:35px;font-family:'JetBrains Mono',monospace;}
+.color-fmt-val{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:5px;
+  padding:3px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);outline:none;cursor:text;}
+/* GitHub stats */
+.gh-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.gh-stat{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px;text-align:center;}
+.gh-stat-val{font-size:18px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.gh-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.gh-avatar{width:48px;height:48px;border-radius:50%;border:2px solid var(--accent2);}
+.gh-profile-row{display:flex;align-items:center;gap:10px;padding:6px 0;}
+.gh-username{font-size:14px;font-weight:800;color:var(--text);}
+.gh-bio{font-size:11px;color:var(--muted);margin-top:2px;}
+/* Screenshot */
+.screenshot-canvas-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#1e1e2e;min-height:100px;display:flex;align-items:center;justify-content:center;}
+#screenshotCanvas{max-width:100%;border-radius:10px;display:block;}
+
+/* ===== QUIZ PANEL ===== */
+.quiz-panel{padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;height:100%;}
+.quiz-setup{display:flex;flex-direction:column;gap:9px;}
+.quiz-topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;}
+.quiz-topic-btn{padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Syne',sans-serif;text-align:center;}
+.quiz-topic-btn:hover{border-color:var(--accent2);color:var(--text);}
+.quiz-topic-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.07);}
+.quiz-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;animation:fadeIn .3s ease;}
+.quiz-q-text{font-size:14px;font-weight:700;line-height:1.6;color:var(--text);margin-bottom:12px;}
+.quiz-options{display:flex;flex-direction:column;gap:7px;}
+.quiz-opt{padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--text);font-size:13px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Syne',sans-serif;}
+.quiz-opt:hover:not(:disabled){border-color:var(--accent2);background:rgba(124,58,237,.1);}
+.quiz-opt.correct{border-color:var(--accent3)!important;background:rgba(16,185,129,.15)!important;color:#6ee7b7!important;}
+.quiz-opt.wrong{border-color:var(--danger)!important;background:rgba(239,68,68,.15)!important;color:#fca5a5!important;}
+.quiz-opt:disabled{cursor:default;}
+.quiz-explain{background:var(--bg);border:1px solid rgba(0,229,255,.2);border-radius:8px;padding:11px 13px;
+  font-size:12px;line-height:1.7;color:var(--text);margin-top:8px;animation:fadeIn .3s ease;}
+.quiz-progress{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);}
+.quiz-prog-bar{flex:1;height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.quiz-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px;transition:width .4s ease;}
+.quiz-score-card{text-align:center;padding:30px;background:var(--card);border:1px solid var(--border);border-radius:14px;}
+.quiz-score-big{font-size:56px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.quiz-streak{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:20px;
+  background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--warn);font-size:11px;font-weight:700;}
+
+/* ===== ROADMAP PANEL ===== */
+.roadmap-panel{padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;height:100%;}
+.roadmap-lang-bar{display:flex;gap:6px;flex-wrap:wrap;}
+.roadmap-lang-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.roadmap-lang-btn.active{border-color:var(--accent3);color:var(--accent3);background:rgba(16,185,129,.07);}
+.roadmap-track{display:flex;flex-direction:column;gap:0;}
+.roadmap-phase{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.roadmap-phase-header{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;
+  background:var(--bg2);border-bottom:1px solid var(--border);}
+.roadmap-phase-title{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.roadmap-phase-badge{padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.phase-beginner{background:rgba(16,185,129,.15);color:#6ee7b7;}
+.phase-intermediate{background:rgba(0,229,255,.1);color:var(--accent);}
+.phase-advanced{background:rgba(124,58,237,.15);color:#c4b5fd;}
+.phase-expert{background:rgba(239,68,68,.1);color:#fca5a5;}
+.roadmap-topics{padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px;}
+.roadmap-topic{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg3);font-size:11px;cursor:pointer;transition:all .15s;}
+.roadmap-topic:hover{border-color:var(--accent2);}
+.roadmap-topic.done{border-color:var(--accent3);background:rgba(16,185,129,.08);color:#6ee7b7;}
+.roadmap-topic .rt-check{width:13px;height:13px;border-radius:3px;border:1px solid var(--border);
+  display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
+.roadmap-topic.done .rt-check{background:var(--accent3);border-color:var(--accent3);color:#fff;}
+.roadmap-progress-wrap{display:flex;align-items:center;gap:10px;padding:4px 14px 10px;}
+.rm-prog-bar{flex:1;height:5px;background:var(--border);border-radius:4px;overflow:hidden;}
+.rm-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent));border-radius:4px;transition:width .5s ease;}
+.rm-prog-pct{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent3);}
+
+/* ===== INTERVIEW PANEL ===== */
+.interview-panel{padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;height:100%;}
+.iv-setup-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.iv-select{background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:7px 11px;border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;outline:none;}
+.iv-select:focus{border-color:var(--accent);}
+.iv-qa-list{display:flex;flex-direction:column;gap:8px;}
+.iv-qa-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.iv-qa-q{padding:11px 14px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;transition:background .15s;}
+.iv-qa-q:hover{background:var(--bg3);}
+.iv-qa-q .iv-diff{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.diff-easy{background:rgba(16,185,129,.12);color:#6ee7b7;}
+.diff-medium{background:rgba(245,158,11,.1);color:var(--warn);}
+.diff-hard{background:rgba(239,68,68,.1);color:#fca5a5;}
+.iv-qa-a{padding:0 14px;max-height:0;overflow:hidden;transition:all .3s ease;font-size:12px;line-height:1.7;color:var(--muted);}
+.iv-qa-a.open{padding:11px 14px;max-height:800px;}
+.iv-qa-a pre{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 11px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;overflow-x:auto;margin:7px 0;color:#abb2bf;white-space:pre-wrap;}
+.iv-tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+.iv-tag{padding:2px 8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);
+  border-radius:4px;font-size:9px;color:#93c5fd;font-family:'JetBrains Mono',monospace;}
+
+/* ===== CANIUSE / DOCS PANEL ===== */
+.docs-panel{padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;height:100%;}
+.docs-search-row{display:flex;gap:7px;}
+.docs-search-row input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;}
+.docs-search-row input:focus{border-color:var(--accent);}
+.docs-source-bar{display:flex;gap:6px;flex-wrap:wrap;}
+.docs-source-btn{padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.docs-source-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.07);}
+.docs-result-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:7px;transition:border-color .15s;}
+.docs-result-card:hover{border-color:var(--accent2);}
+.docs-result-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.docs-result-title a{color:var(--accent);text-decoration:none;}
+.docs-result-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.docs-result-meta{font-size:10px;color:var(--accent3);font-family:'JetBrains Mono',monospace;margin-top:5px;}
+
+/* ===== FLASHCARD PANEL ===== */
+.flashcard-panel{padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;height:100%;}
+.fc-card-wrap{perspective:1000px;height:200px;cursor:pointer;}
+.fc-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s ease;}
+.fc-card.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;border-radius:14px;padding:20px;text-align:center;}
+.fc-front{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(0,229,255,.1));
+  border:1px solid rgba(0,229,255,.25);}
+.fc-back{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(0,229,255,.08));
+  border:1px solid rgba(16,185,129,.3);transform:rotateY(180deg);}
+.fc-term{font-size:20px;font-weight:800;color:var(--text);line-height:1.4;}
+.fc-def{font-size:13px;color:var(--text);line-height:1.7;}
+.fc-hint{font-size:11px;color:var(--muted);margin-top:8px;}
+.fc-nav{display:flex;align-items:center;gap:10px;justify-content:center;}
+.fc-counter{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted);}
+.fc-rating{display:flex;gap:8px;justify-content:center;}
+.fc-rate-btn{padding:7px 18px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;}
+.fc-easy{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);}
+.fc-hard{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.3);}
+.fc-ok{background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.3);}
+.fc-deck-bar{display:flex;gap:6px;flex-wrap:wrap;}
+.fc-deck-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.fc-deck-btn.active{border-color:var(--accent2);color:#c4b5fd;background:rgba(124,58,237,.1);}
+
+/* ===== NEW DEVTOOLS CARDS ===== */
+.uuid-grid{display:flex;flex-direction:column;gap:5px;}
+.uuid-row{display:flex;gap:6px;align-items:center;}
+.uuid-val{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:5px;
+  padding:4px 9px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent3);}
+.cron-display{font-size:13px;color:var(--accent);font-family:'JetBrains Mono',monospace;margin:4px 0;}
+.cron-human{font-size:11px;color:var(--accent3);line-height:1.5;}
+.lorem-output{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 11px;
+  font-size:12px;line-height:1.7;color:var(--text);min-height:60px;max-height:120px;overflow-y:auto;}
+
+/* ===== WEATHER CARD ===== */
+.weather-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;animation:fadeIn .3s ease;}
+.weather-main{display:flex;align-items:center;gap:16px;}
+.weather-icon{font-size:52px;line-height:1;}
+.weather-temp{font-size:44px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.weather-city{font-size:20px;font-weight:700;color:var(--accent);}
+.weather-desc{font-size:13px;color:var(--muted);text-transform:capitalize;}
+.weather-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:14px;}
+.weather-stat{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px;}
+.weather-stat-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;}
+.weather-stat-val{font-size:15px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.weather-forecast{display:flex;gap:8px;overflow-x:auto;padding:4px 0;margin-top:10px;}
+.forecast-day{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;text-align:center;flex-shrink:0;min-width:80px;}
+.forecast-day-name{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+.forecast-day-icon{font-size:22px;margin-bottom:3px;}
+.forecast-day-temp{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text);}
+
+/* ===== NEWS CARD ===== */
+.news-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px 15px;transition:border-color .15s;animation:fadeIn .2s ease;}
+.news-card:hover{border-color:var(--accent2);}
+.news-card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:5px;line-height:1.5;}
+.news-card-title a{color:var(--accent);text-decoration:none;}
+.news-card-title a:hover{text-decoration:underline;}
+.news-card-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.news-meta-item{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.news-score{background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.3);padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+
+/* ===== FILE VAULT ===== */
+.vault-file-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px;display:flex;flex-direction:column;gap:7px;transition:border-color .15s;position:relative;animation:fadeIn .25s ease;}
+.vault-file-card:hover{border-color:var(--accent2);}
+.vault-file-icon{font-size:30px;text-align:center;}
+.vault-file-name{font-size:11px;font-weight:700;color:var(--text);word-break:break-all;line-height:1.4;}
+.vault-file-size{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.vault-file-date{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.vault-file-actions{display:flex;gap:5px;margin-top:3px;}
+.vault-btn{flex:1;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Syne',sans-serif;}
+.vault-btn:hover{color:var(--text);border-color:var(--muted);}
+.vault-btn.dl{color:var(--accent3);border-color:rgba(16,185,129,.3);}
+.vault-btn.dl:hover{background:rgba(16,185,129,.1);}
+.vault-btn.rm{color:var(--danger);border-color:rgba(239,68,68,.3);}
+.vault-btn.rm:hover{background:rgba(239,68,68,.1);}
+.vault-progress{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:center;justify-content:center;}
+.vault-progress-inner{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:26px 30px;min-width:260px;text-align:center;}
+.vault-prog-bar-wrap{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;margin:12px 0 8px;}
+.vault-prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px;transition:width .2s;}
+.vault-img-thumb{width:100%;height:90px;object-fit:cover;border-radius:7px;border:1px solid var(--border);}
+#vaultDropZone.drag-over{border-color:var(--accent);background:rgba(0,229,255,.05);}
+
+/* ===== IMG GEN ===== */
+.gen-img-result{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;max-width:600px;}
+.gen-img-result img{width:100%;border-radius:8px;border:1px solid var(--border);}
+.gen-img-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+/* ===== NEW API PANELS ===== */
+.npm-pkg-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;animation:fadeIn .3s ease;}
+.npm-pkg-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+.npm-pkg-name{font-size:18px;font-weight:900;color:var(--accent);font-family:'JetBrains Mono',monospace;}
+.npm-pkg-version{font-size:12px;color:var(--accent3);font-family:'JetBrains Mono',monospace;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);padding:2px 8px;border-radius:12px;}
+.npm-pkg-desc{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:10px;}
+.npm-pkg-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin-bottom:10px;}
+.npm-pkg-stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 11px;}
+.npm-pkg-stat-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.npm-pkg-stat-val{font-size:14px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.npm-install-cmd{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent3);display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.npm-install-cmd:hover{border-color:var(--accent3);}
+.npm-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);color:#c4b5fd;margin:2px;}
+.gh-repo-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px;transition:border-color .15s;animation:fadeIn .2s ease;}
+.gh-repo-card:hover{border-color:var(--accent2);}
+.gh-repo-name{font-size:14px;font-weight:800;color:var(--accent);margin-bottom:5px;}
+.gh-repo-name a{color:var(--accent);text-decoration:none;}
+.gh-repo-name a:hover{text-decoration:underline;}
+.gh-repo-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:9px;}
+.gh-repo-meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.gh-repo-badge{display:flex;align-items:center;gap:4px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);}
+.gh-lang-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.caniuse-result{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;animation:fadeIn .3s ease;}
+.caniuse-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.caniuse-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.browser-support-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;}
+.browser-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.browser-icon{font-size:22px;margin-bottom:4px;}
+.browser-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:3px;}
+.browser-version{font-size:12px;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.support-yes{color:#6ee7b7;}
+.support-partial{color:var(--warn);}
+.support-no{color:#f38ba8;}
+.quote-card{background:var(--card);border:1px solid rgba(0,229,255,.15);border-radius:14px;padding:22px;position:relative;animation:fadeIn .35s ease;}
+.quote-card::before{content:'"';position:absolute;top:10px;left:16px;font-size:60px;color:rgba(0,229,255,.08);font-family:serif;line-height:1;}
+.quote-text{font-size:15px;line-height:1.8;color:var(--text);font-style:italic;padding-left:8px;margin-bottom:12px;}
+.quote-author{font-size:12px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace;}
+.joke-card{background:var(--card);border:1px solid rgba(245,158,11,.2);border-radius:14px;padding:20px;animation:fadeIn .35s ease;}
+.joke-setup{font-size:14px;color:var(--text);font-weight:700;margin-bottom:10px;}
+.joke-punchline{font-size:14px;color:var(--warn);margin-top:8px;border-top:1px solid var(--border);padding-top:10px;}
+.ip-result{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;animation:fadeIn .3s ease;}
+.ip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:10px;}
+.ip-stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.ip-stat-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.ip-stat-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);word-break:break-all;}
+.ip-address-display{font-size:28px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--accent);margin-bottom:8px;}
+.color-palette-strip{display:flex;height:70px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);}
+.color-swatch-big{flex:1;display:flex;align-items:flex-end;padding:5px 7px;cursor:pointer;transition:flex .2s;}
+.color-swatch-big:hover{flex:2;}
+.color-swatch-hex{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.5);color:#fff;padding:2px 5px;border-radius:3px;text-align:center;}
+.color-swatch-list{display:flex;flex-direction:column;gap:8px;}
+.color-swatch-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s;}
+.color-swatch-row:hover{border-color:var(--accent);}
+.color-swatch-preview{width:36px;height:36px;border-radius:6px;flex-shrink:0;border:1px solid rgba(255,255,255,.1);}
+.color-swatch-info{flex:1;}
+.color-swatch-name{font-size:13px;font-weight:700;color:var(--text);}
+.color-swatch-formats{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay hidden" id="apiModal">
+  <div class="modal">
+    <h2>🔑 Connect Gemini</h2>
+    <p>Enter your Gemini API key. Stored locally in your browser only.</p>
+    <input type="password" id="apiKeyInput" placeholder="AIza..." autocomplete="off"/>
+    <div class="model-note">Primary: <span>gemini-2.5-flash</span> · 6 fallback models auto-retry</div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('apiModal')">Skip</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Connect →</button>
+    </div>
+  </div>
+</div>
+
+<!-- JUDGE0 KEY MODAL -->
+<div class="modal-overlay hidden" id="judge0Modal">
+  <div class="modal">
+    <h2>⚙️ Judge0 API Key</h2>
+    <p>For compiled languages (C++, Java, Rust, Go…) CodeMind uses Judge0 via RapidAPI. JavaScript & HTML run natively without a key.</p>
+    <input type="password" id="j0KeyInput" placeholder="RapidAPI key..." autocomplete="off"/>
+    <div class="model-note">Get free key at <span>rapidapi.com → Judge0 CE</span></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('judge0Modal')">Skip (JS/HTML only)</button>
+      <button class="btn btn-primary" onclick="saveJ0Key()">Save Key →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GITHUB GIST MODAL -->
+<div class="modal-overlay hidden" id="gistModal">
+  <div class="modal" style="width:480px">
+    <h2>🐙 GitHub Gist</h2>
+    <p>Save your editor code as a Gist, or load a public Gist by URL/ID. Requires a GitHub PAT with <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px;">gist</code> scope.</p>
+    <input type="password" id="ghTokenInput" placeholder="GitHub PAT (ghp_...)" autocomplete="off"/>
+    <input type="text" id="gistUrlInput" placeholder="Gist URL or ID to load (optional)" style="margin-top:0;"/>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'JetBrains Mono',monospace;">
+      Get token: github.com → Settings → Developer settings → Personal access tokens
+    </div>
+    <div class="gist-list" id="gistList"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('gistModal')">Cancel</button>
+      <button class="btn btn-secondary" onclick="loadGistFromUrl()">📥 Load Gist</button>
+      <button class="btn btn-primary" onclick="saveAsGist()">💾 Save Gist →</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">CM</div>
+    <div class="logo-text">Code<span>Mind</span></div>
+  </div>
+  <div class="header-right">
+    <div class="api-badge" onclick="openModal('apiModal')" title="Gemini API Key">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">No API Key</span>
+    </div>
+    <div class="api-badge" onclick="openModal('judge0Modal')" title="Judge0 (compiled langs)">
+      <div class="dot" id="j0Dot"></div>
+      <span id="j0Text">Judge0</span>
+    </div>
+    <div class="api-badge" onclick="openGistModal()" title="GitHub Gist">
+      <div class="dot" id="ghDot"></div>
+      <span id="ghText">Gist</span>
+    </div>
+    <select class="lang-select" id="globalLang" onchange="setLang(this.value)">
+      <option value="javascript">JavaScript</option>
+      <option value="html">HTML/CSS</option>
+      <option value="python">Python</option>
+      <option value="typescript">TypeScript</option>
+      <option value="java">Java</option>
+      <option value="cpp">C++</option>
+      <option value="c">C</option>
+      <option value="csharp">C#</option>
+      <option value="go">Go</option>
+      <option value="rust">Rust</option>
+      <option value="kotlin">Kotlin</option>
+      <option value="swift">Swift</option>
+      <option value="ruby">Ruby</option>
+      <option value="php">PHP</option>
+      <option value="scala">Scala</option>
+      <option value="r">R</option>
+      <option value="dart">Dart</option>
+      <option value="sql">SQL</option>
+      <option value="postgresql">PostgreSQL</option>
+      <option value="mysql">MySQL</option>
+      <option value="mongodb">MongoDB (JS)</option>
+      <option value="bash">Bash / Shell</option>
+      <option value="powershell">PowerShell</option>
+      <option value="julia">Julia</option>
+      <option value="matlab">MATLAB / Octave</option>
+      <option value="haskell">Haskell</option>
+      <option value="elixir">Elixir</option>
+      <option value="lua">Lua</option>
+      <option value="solidity">Solidity</option>
+      <option value="graphql">GraphQL</option>
+      <option value="yaml">YAML / Config</option>
+      <option value="asm">Assembly (x86)</option>
+      <option value="cobol">COBOL</option>
+      <option value="prolog">Prolog</option>
+    </select>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Mode</div>
+      <button class="mode-btn active" onclick="setMode('solve')" id="mode-solve"><span class="icon">⚡</span> Solve Problem</button>
+      <button class="mode-btn" onclick="setMode('debug')" id="mode-debug"><span class="icon">🐛</span> Debug Code</button>
+      <button class="mode-btn" onclick="setMode('explain')" id="mode-explain"><span class="icon">📖</span> Explain Code</button>
+      <button class="mode-btn" onclick="setMode('optimize')" id="mode-optimize"><span class="icon">🚀</span> Optimize</button>
+      <button class="mode-btn" onclick="setMode('generate')" id="mode-generate"><span class="icon">✨</span> Generate Code</button>
+      <button class="mode-btn" onclick="setMode('complexity')" id="mode-complexity"><span class="icon">📊</span> Complexity</button>
+      <button class="mode-btn" onclick="setMode('unittest')" id="mode-unittest"><span class="icon">🧪</span> Unit Tests</button>
+      <button class="mode-btn" onclick="setMode('review')" id="mode-review"><span class="icon">🔍</span> Code Review</button>
+      <button class="mode-btn" onclick="switchTab('regex')" id="mode-regex"><span class="icon">🎯</span> Regex Tester</button>
+      <button class="mode-btn" onclick="switchTab('diff')" id="mode-diff"><span class="icon">📑</span> Code Diff</button>
+      <button class="mode-btn" onclick="switchTab('cheatsheet')" id="mode-cheatsheet"><span class="icon">📚</span> Cheatsheet</button>
+      <button class="mode-btn" onclick="switchTab('stackoverflow')" id="mode-stackoverflow"><span class="icon">🔍</span> StackOverflow</button>
+      <button class="mode-btn" onclick="switchTab('devtools')" id="mode-devtools"><span class="icon">🛠</span> DevTools</button>
+      <button class="mode-btn" onclick="switchTab('quiz')" id="mode-quiz"><span class="icon">🎯</span> Coding Quiz</button>
+      <button class="mode-btn" onclick="switchTab('flashcard')" id="mode-flashcard"><span class="icon">🃏</span> Flashcards</button>
+      <button class="mode-btn" onclick="switchTab('interview')" id="mode-interview"><span class="icon">💼</span> Interview Prep</button>
+      <button class="mode-btn" onclick="switchTab('roadmap')" id="mode-roadmap"><span class="icon">🗺️</span> Learning Path</button>
+      <button class="mode-btn" onclick="switchTab('docs')" id="mode-docs"><span class="icon">📖</span> MDN / Docs</button>
+      <button class="mode-btn" onclick="switchTab('aiimage')" id="mode-aiimage"><span class="icon">🖼️</span> AI Image Gen</button>
+      <button class="mode-btn" onclick="switchTab('translate')" id="mode-translate"><span class="icon">🌍</span> AI Translator</button>
+      <button class="mode-btn" onclick="switchTab('weather')" id="mode-weather"><span class="icon">🌤️</span> Weather API</button>
+      <button class="mode-btn" onclick="switchTab('news')" id="mode-news"><span class="icon">📰</span> Tech News</button>
+      <button class="mode-btn" onclick="switchTab('filevault')" id="mode-filevault"><span class="icon">🗄️</span> File Vault</button>
+      <button class="mode-btn" onclick="switchTab('npminfo')" id="mode-npminfo"><span class="icon">📦</span> npm Package Info</button>
+      <button class="mode-btn" onclick="switchTab('ghsearch')" id="mode-ghsearch"><span class="icon">🐙</span> GitHub Repo Search</button>
+      <button class="mode-btn" onclick="switchTab('caniuse')" id="mode-caniuse"><span class="icon">🌐</span> Can I Use / MDN</button>
+      <button class="mode-btn" onclick="switchTab('devquotes')" id="mode-devquotes"><span class="icon">💬</span> Dev Quotes</button>
+      <button class="mode-btn" onclick="switchTab('iplookup')" id="mode-iplookup"><span class="icon">🌍</span> IP / DNS Lookup</button>
+      <button class="mode-btn" onclick="switchTab('colorapi')" id="mode-colorapi"><span class="icon">🎨</span> Color Palette API</button>
+      <button class="mode-btn" onclick="switchTab('pypi')" id="mode-pypi"><span class="icon">🐍</span> PyPI Package Info</button>
+      <button class="mode-btn" onclick="switchTab('crates')" id="mode-crates"><span class="icon">🦀</span> Crates.io (Rust)</button>
+      <button class="mode-btn" onclick="switchTab('huggingface')" id="mode-huggingface"><span class="icon">🤗</span> Hugging Face Models</button>
+      <button class="mode-btn" onclick="switchTab('mlpapers')" id="mode-mlpapers"><span class="icon">📄</span> ML / AI Papers</button>
+      <button class="mode-btn" onclick="switchTab('dbplayground')" id="mode-dbplayground"><span class="icon">🗃️</span> SQL Playground</button>
+      <button class="mode-btn" onclick="switchTab('bigochart')" id="mode-bigochart"><span class="icon">📈</span> Big-O Chart</button>
+      <button class="mode-btn" onclick="switchTab('leetstats')" id="mode-leetstats"><span class="icon">🏆</span> LeetCode Stats</button>
+      <button class="mode-btn" onclick="switchTab('exercism')" id="mode-exercism"><span class="icon">🏋️</span> Exercism Challenges</button>
+      <button class="mode-btn" onclick="switchTab('gitignore')" id="mode-gitignore"><span class="icon">🚫</span> .gitignore Generator</button>
+      <button class="mode-btn" onclick="switchTab('aicoderev')" id="mode-aicoderev"><span class="icon">🤖</span> AI Code Review Pro</button>
+      <button class="mode-btn" onclick="switchTab('countries')" id="mode-countries"><span class="icon">🌍</span> Countries Info</button>
+      <button class="mode-btn" onclick="switchTab('trivia')" id="mode-trivia"><span class="icon">🎲</span> Trivia Quiz</button>
+      <button class="mode-btn" onclick="switchTab('qrcode')" id="mode-qrcode"><span class="icon">📲</span> QR Code Gen</button>
+      <button class="mode-btn" onclick="switchTab('randomuser')" id="mode-randomuser"><span class="icon">👤</span> Random User API</button>
+      <button class="mode-btn" onclick="switchTab('currency')" id="mode-currency"><span class="icon">💱</span> Currency Exchange</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Languages</div>
+      <div class="lang-grid" id="langGrid"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Platform</div>
+      <div class="platform-row">
+        <div class="plat-tag active-lc" id="plat-leetcode" onclick="setPlatform('leetcode')">LeetCode</div>
+        <div class="plat-tag" id="plat-codeforces" onclick="setPlatform('codeforces')">Codeforces</div>
+        <div class="plat-tag" id="plat-general" onclick="setPlatform('general')">General</div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Prompts</div>
+      <button class="mode-btn" onclick="quickPrompt('Two Sum - find two numbers that add up to target, return indices')"><span class="icon">🔢</span> Two Sum</button>
+      <button class="mode-btn" onclick="quickPrompt('Binary Search on sorted array')"><span class="icon">🔍</span> Binary Search</button>
+      <button class="mode-btn" onclick="quickPrompt('Fibonacci using dynamic programming and memoization')"><span class="icon">🌀</span> DP / Memo</button>
+      <button class="mode-btn" onclick="quickPrompt('Graph BFS and DFS traversal')"><span class="icon">🕸️</span> BFS / DFS</button>
+      <button class="mode-btn" onclick="quickPrompt('Sliding window maximum subarray sum of size k')"><span class="icon">🪟</span> Sliding Window</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">npm Search</div>
+      <div class="npm-search-wrap">
+        <div class="npm-input-row">
+          <input type="text" id="npmSearchInput" placeholder="e.g. axios, lodash..." onkeydown="if(event.key==='Enter')npmSearch()"/>
+          <button onclick="npmSearch()">🔍</button>
+        </div>
+        <div id="npmResults"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- EDITOR AREA -->
+  <div class="editor-area">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('question')" id="tab-question">📝 Problem</div>
+      <div class="tab" onclick="switchTab('code')" id="tab-code">💻 Editor</div>
+      <div class="tab" onclick="switchTab('response')" id="tab-response">🤖 AI Response</div>
+      <div class="tab" onclick="switchTab('regex')" id="tab-regex">🎯 Regex</div>
+      <div class="tab" onclick="switchTab('diff')" id="tab-diff">📑 Diff</div>
+      <div class="tab" onclick="switchTab('cheatsheet')" id="tab-cheatsheet">📚 Cheatsheet</div>
+      <div class="tab" onclick="switchTab('stackoverflow')" id="tab-stackoverflow">🔍 StackOverflow</div>
+      <div class="tab" onclick="switchTab('devtools')" id="tab-devtools">🛠 DevTools</div>
+      <div class="tab" onclick="switchTab('quiz')" id="tab-quiz">🎯 Quiz</div>
+      <div class="tab" onclick="switchTab('flashcard')" id="tab-flashcard">🃏 Flashcards</div>
+      <div class="tab" onclick="switchTab('interview')" id="tab-interview">💼 Interview</div>
+      <div class="tab" onclick="switchTab('roadmap')" id="tab-roadmap">🗺️ Roadmap</div>
+      <div class="tab" onclick="switchTab('docs')" id="tab-docs">📖 Docs</div>
+      <div class="tab" onclick="switchTab('aiimage')" id="tab-aiimage">🖼️ AI Image</div>
+      <div class="tab" onclick="switchTab('translate')" id="tab-translate">🌍 Translate</div>
+      <div class="tab" onclick="switchTab('weather')" id="tab-weather">🌤️ Weather</div>
+      <div class="tab" onclick="switchTab('news')" id="tab-news">📰 News</div>
+      <div class="tab" onclick="switchTab('filevault')" id="tab-filevault">🗄️ File Vault</div>
+      <div class="tab" onclick="switchTab('npminfo')" id="tab-npminfo">📦 npm Info</div>
+      <div class="tab" onclick="switchTab('ghsearch')" id="tab-ghsearch">🐙 Repo Search</div>
+      <div class="tab" onclick="switchTab('caniuse')" id="tab-caniuse">🌐 Can I Use</div>
+      <div class="tab" onclick="switchTab('devquotes')" id="tab-devquotes">💬 Dev Quotes</div>
+      <div class="tab" onclick="switchTab('iplookup')" id="tab-iplookup">🌍 IP Lookup</div>
+      <div class="tab" onclick="switchTab('colorapi')" id="tab-colorapi">🎨 Color Palette</div>
+      <div class="tab" onclick="switchTab('pypi')" id="tab-pypi">🐍 PyPI</div>
+      <div class="tab" onclick="switchTab('crates')" id="tab-crates">🦀 Crates.io</div>
+      <div class="tab" onclick="switchTab('huggingface')" id="tab-huggingface">🤗 HF Models</div>
+      <div class="tab" onclick="switchTab('mlpapers')" id="tab-mlpapers">📄 ML Papers</div>
+      <div class="tab" onclick="switchTab('dbplayground')" id="tab-dbplayground">🗃️ SQL Playground</div>
+      <div class="tab" onclick="switchTab('bigochart')" id="tab-bigochart">📈 Big-O</div>
+      <div class="tab" onclick="switchTab('leetstats')" id="tab-leetstats">🏆 LeetCode Stats</div>
+      <div class="tab" onclick="switchTab('exercism')" id="tab-exercism">🏋️ Exercism</div>
+      <div class="tab" onclick="switchTab('gitignore')" id="tab-gitignore">🚫 .gitignore</div>
+      <div class="tab" onclick="switchTab('aicoderev')" id="tab-aicoderev">🤖 AI Review Pro</div>
+      <div class="tab" onclick="switchTab('countries')" id="tab-countries">🌍 Countries</div>
+      <div class="tab" onclick="switchTab('trivia')" id="tab-trivia">🎲 Trivia</div>
+      <div class="tab" onclick="switchTab('qrcode')" id="tab-qrcode">📲 QR Code</div>
+      <div class="tab" onclick="switchTab('randomuser')" id="tab-randomuser">👤 Random User</div>
+      <div class="tab" onclick="switchTab('currency')" id="tab-currency">💱 Currency</div>
+    </div>
+
+    <!-- QUESTION TAB -->
+    <div class="panel active" id="panel-question">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">Problem / Question</div>
+          <textarea class="question-textarea" id="questionInput" placeholder="Paste your LeetCode / Codeforces problem or describe what you want to code..."></textarea>
+        </div>
+        <div>
+          <div class="input-label">Your Code (optional)</div>
+          <textarea class="code-textarea" id="codeInput" placeholder="Paste your existing code here for debugging, optimization or explanation..."></textarea>
+        </div>
+        <div>
+          <div class="input-label">Answer Type</div>
+          <div class="options-row" id="answerTypeRow">
+            <div class="opt-btn active" onclick="toggleOpt(this,'optimal')">⚡ Optimal</div>
+            <div class="opt-btn" onclick="toggleOpt(this,'brute')">🪨 Brute Force</div>
+            <div class="opt-btn" onclick="toggleOpt(this,'both')">⚡🪨 Both</div>
+            <div class="opt-btn" onclick="toggleOpt(this,'stepbystep')">🪜 Step-by-Step</div>
+            <div class="opt-btn" onclick="toggleOpt(this,'hint')">💡 Hint Only</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="askAI()" id="askBtn"><span>⚡</span> Ask CodeMind</button>
+          <button class="btn btn-secondary" onclick="clearAll()">🗑 Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODE TAB -->
+    <div class="panel" id="panel-code">
+      <div class="code-panel">
+        <div class="code-split">
+          <!-- EDITOR COLUMN -->
+          <div class="editor-col">
+            <div class="editor-top-bar">
+              <div class="input-label">✏️ <span id="editorLangLabel">JavaScript</span></div>
+              <div class="toolbar-right">
+                <button class="tbtn" onclick="clearEditor()" title="Clear editor">🗑</button>
+                <button class="tbtn" onclick="copyEditor()" id="copyEditorBtn">📋 Copy</button>
+                <button class="tbtn fmt-btn" onclick="formatCode()" id="fmtBtn">✨ Format</button>
+                <button class="tbtn debug-btn" onclick="debugCurrentCode()">🐛 Debug</button>
+                <button class="tbtn preview-btn" onclick="togglePreview()" id="previewToggleBtn" style="display:none">👁 Preview</button>
+                <button class="tbtn" onclick="reviewCurrentCode()" style="background:rgba(16,185,129,.15);color:#6ee7b7;border-color:rgba(16,185,129,.3)">🔍 Review</button>
+                <button class="tbtn" onclick="openGistModal()" style="background:rgba(0,0,0,.3);color:var(--muted);border-color:var(--border)">🐙 Gist</button>
+                <button class="tbtn run-btn" onclick="runCode()" id="runBtn">▶ Run</button>
+              </div>
+            </div>
+            <div class="editor-scroll">
+              <textarea id="codeEditor" spellcheck="false" placeholder="// Write or paste your code here..."></textarea>
+            </div>
+            <div class="stdin-bar" id="stdinBar">
+              <label>STDIN</label>
+              <input type="text" id="stdinInput" placeholder="Input for your program (press Enter to add newlines with \n)"/>
+            </div>
+          </div>
+          <!-- RESIZER -->
+          <div class="resizer" id="resizer"></div>
+          <!-- PREVIEW COLUMN -->
+          <div class="preview-col hidden" id="previewCol">
+            <div class="preview-header">
+              <span class="preview-header-label">🌐 Live Preview</span>
+              <button class="preview-close" onclick="closePreview()">✕ Close</button>
+            </div>
+            <iframe id="previewFrame" sandbox="allow-scripts allow-modals"></iframe>
+          </div>
+        </div>
+        <!-- OUTPUT -->
+        <div class="output-panel">
+          <div class="output-header">
+            <span class="output-header-label">▶ Output</span>
+            <div class="exec-meta" id="execMeta"></div>
+          </div>
+          <div class="output-content">
+            <div class="output-box muted-out" id="outputBox">Run your code to see output here...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESPONSE TAB -->
+    <div class="panel" id="panel-response">
+      <div class="response-panel" id="responsePanel">
+        <div class="empty-state">
+          <div class="empty-icon">🤖</div>
+          <div class="empty-text">
+            <strong>CodeMind Ready</strong>
+            Enter a problem in the Problem tab and click Ask CodeMind.<br/>
+            Supports LeetCode · Codeforces · 16 languages · Run & Preview
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGEX TAB -->
+    <div class="panel" id="panel-regex">
+      <div class="regex-panel">
+        <div>
+          <div class="input-label">Regular Expression</div>
+          <div class="regex-input-row">
+            <span style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:18px;padding:0 4px">/</span>
+            <input type="text" id="regexPattern" placeholder="pattern here..." oninput="runRegex()" style="font-size:15px;"/>
+            <span style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:18px;padding:0 4px">/</span>
+            <div class="regex-flags">
+              <div class="flag-btn" id="flag-g" onclick="toggleFlag('g')">g</div>
+              <div class="flag-btn" id="flag-i" onclick="toggleFlag('i')">i</div>
+              <div class="flag-btn" id="flag-m" onclick="toggleFlag('m')">m</div>
+              <div class="flag-btn" id="flag-s" onclick="toggleFlag('s')">s</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="input-label">Test String</div>
+          <textarea class="regex-test-area" id="regexTestStr" placeholder="Paste text to test against your regex..." oninput="runRegex()"></textarea>
+        </div>
+        <div style="display:flex;gap:7px;">
+          <button class="btn btn-primary" style="flex:none;padding:7px 14px;font-size:12px;" onclick="explainRegex()">🤖 Explain Regex</button>
+          <button class="btn btn-secondary" style="font-size:12px;" onclick="generateRegex()">✨ Generate from Description</button>
+          <button class="btn btn-secondary" style="font-size:12px;" onclick="clearRegex()">🗑 Clear</button>
+        </div>
+        <div>
+          <div class="input-label">Matches</div>
+          <div class="regex-result-box" id="regexOutput"><span style="color:var(--muted)">Enter a pattern and test string above...</span></div>
+          <div class="regex-stats" id="regexStats"></div>
+        </div>
+        <div>
+          <div class="input-label">AI Explanation</div>
+          <div class="regex-result-box" id="regexExplain" style="min-height:50px;"><span style="color:var(--muted)">Click "Explain Regex" for a breakdown...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIFF TAB -->
+    <div class="panel" id="panel-diff">
+      <div class="diff-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="input-label">Code Diff — paste two versions to compare</div>
+          <div style="display:flex;gap:7px;">
+            <button class="btn btn-primary" style="flex:none;padding:7px 14px;font-size:12px;" onclick="runDiff()">🔍 Compare</button>
+            <button class="btn btn-secondary" style="font-size:12px;" onclick="aiExplainDiff()">🤖 AI Explain Changes</button>
+          </div>
+        </div>
+        <div class="diff-cols" style="flex:1;min-height:150px;">
+          <div style="display:flex;flex-direction:column;flex:1;gap:5px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--danger);text-transform:uppercase;">Before (Original)</div>
+            <textarea id="diffBefore" placeholder="// Paste original code here..."></textarea>
+          </div>
+          <div style="display:flex;flex-direction:column;flex:1;gap:5px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--accent3);text-transform:uppercase;">After (Modified)</div>
+            <textarea id="diffAfter" placeholder="// Paste modified code here..."></textarea>
+          </div>
+        </div>
+        <div>
+          <div class="input-label">Diff Output</div>
+          <div class="diff-output" id="diffOutput"><span style="color:var(--muted)">Paste two code versions above and click Compare...</span></div>
+        </div>
+        <div>
+          <div class="input-label">AI Change Summary</div>
+          <div class="diff-output" id="diffAiSummary" style="max-height:150px;"><span style="color:var(--muted)">Click "AI Explain Changes" for a semantic summary...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHEATSHEET TAB -->
+    <div class="panel" id="panel-cheatsheet">
+      <div class="cheatsheet-panel">
+        <div>
+          <div class="input-label">Quick Reference</div>
+          <div class="cs-lang-bar" id="csLangBar"></div>
+        </div>
+        <div class="cs-grid" id="csGrid"></div>
+      </div>
+    </div>
+
+    <!-- STACKOVERFLOW TAB -->
+    <div class="panel" id="panel-stackoverflow">
+      <div class="so-panel">
+        <div>
+          <div class="input-label">Search StackOverflow (free API)</div>
+          <div class="so-search-row">
+            <input type="text" id="soInput" placeholder="e.g. javascript async await promise..." onkeydown="if(event.key==='Enter')searchSO()"/>
+            <button class="btn btn-primary" style="flex:none;padding:9px 16px;" onclick="searchSO()">🔍 Search</button>
+          </div>
+        </div>
+        <div class="so-filters" id="soFilters">
+          <div class="so-filter active" onclick="setSoSort('votes',this)">⭐ Top Votes</div>
+          <div class="so-filter" onclick="setSoSort('activity',this)">🔥 Recent</div>
+          <div class="so-filter" onclick="setSoSort('relevance',this)">🎯 Relevance</div>
+        </div>
+        <div id="soResults"><div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">Search StackOverflow for any coding question above 👆</div></div>
+      </div>
+    </div>
+
+    <!-- DEVTOOLS TAB -->
+    <div class="panel" id="panel-devtools">
+      <div class="devtools-panel">
+        <div class="devtools-grid">
+
+          <!-- Pomodoro Timer -->
+          <div class="dt-card">
+            <div class="dt-card-title">⏱ Pomodoro Focus Timer</div>
+            <div class="pomodoro-display">
+              <div class="pomo-time" id="pomoTime">25:00</div>
+              <div class="pomo-label" id="pomoLabel">Focus Session</div>
+              <div class="pomo-progress"><div class="pomo-bar" id="pomoBar" style="width:100%"></div></div>
+            </div>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="pomoStart()" id="pomoStartBtn">▶ Start</button>
+              <button class="dt-btn" onclick="pomoPause()" id="pomoPauseBtn" style="display:none">⏸ Pause</button>
+              <button class="dt-btn" onclick="pomoReset()">↺ Reset</button>
+              <button class="dt-btn" id="pomoModeBtn" onclick="togglePomoMode()">☕ Break</button>
+            </div>
+          </div>
+
+          <!-- Color Converter -->
+          <div class="dt-card">
+            <div class="dt-card-title">🎨 Color Converter</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="color" id="colorPicker" value="#00e5ff" onchange="updateColor(this.value)" class="color-swatch"/>
+              <input class="dt-input" style="min-height:0;resize:none;" id="colorHexInput" value="#00e5ff" oninput="onColorHexInput(this.value)" placeholder="#hex or rgb()..."/>
+            </div>
+            <div class="color-formats" id="colorFormats"></div>
+            <canvas id="colorPaletteCanvas" width="100%" height="30" style="border-radius:6px;width:100%;height:24px;border:1px solid var(--border)"></canvas>
+          </div>
+
+          <!-- Base64 Encoder/Decoder -->
+          <div class="dt-card">
+            <div class="dt-card-title">🔐 Base64 Encode / Decode</div>
+            <textarea class="dt-input" id="b64Input" rows="3" placeholder="Enter text or Base64..."></textarea>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="b64Encode()">🔒 Encode</button>
+              <button class="dt-btn" onclick="b64Decode()">🔓 Decode</button>
+              <button class="dt-btn" onclick="b64Clear()">🗑 Clear</button>
+              <button class="dt-btn" onclick="copyDt('b64Output')">📋 Copy</button>
+            </div>
+            <div class="dt-output" id="b64Output">Result will appear here...</div>
+          </div>
+
+          <!-- URL Encoder -->
+          <div class="dt-card">
+            <div class="dt-card-title">🔗 URL Encoder / Decoder</div>
+            <textarea class="dt-input" id="urlInput" rows="3" placeholder="Paste URL or encoded string..."></textarea>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="urlEncode()">🔒 Encode</button>
+              <button class="dt-btn" onclick="urlDecode()">🔓 Decode</button>
+              <button class="dt-btn" onclick="copyDt('urlOutput')">📋 Copy</button>
+            </div>
+            <div class="dt-output" id="urlOutput">Result will appear here...</div>
+          </div>
+
+          <!-- JSON Formatter -->
+          <div class="dt-card">
+            <div class="dt-card-title">📋 JSON Formatter / Minifier</div>
+            <textarea class="dt-input" id="jsonInput" rows="4" placeholder='{"key": "value", "arr": [1,2,3]}'></textarea>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="jsonFormat()">✨ Prettify</button>
+              <button class="dt-btn" onclick="jsonMinify()">🗜 Minify</button>
+              <button class="dt-btn" onclick="jsonValidate()">✅ Validate</button>
+              <button class="dt-btn" onclick="jsonToEditor()">→ Editor</button>
+            </div>
+            <div class="dt-output" id="jsonOutput" style="max-height:120px;overflow-y:auto;">Result will appear here...</div>
+          </div>
+
+          <!-- Hash Generator -->
+          <div class="dt-card">
+            <div class="dt-card-title">🔑 Hash Generator (SHA)</div>
+            <textarea class="dt-input" id="hashInput" rows="2" placeholder="Text to hash..."></textarea>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="genHash('SHA-1')">SHA-1</button>
+              <button class="dt-btn" onclick="genHash('SHA-256')">SHA-256</button>
+              <button class="dt-btn" onclick="genHash('SHA-512')">SHA-512</button>
+              <button class="dt-btn" onclick="copyDt('hashOutput')">📋 Copy</button>
+            </div>
+            <div class="dt-output" id="hashOutput" style="word-break:break-all;">Hash will appear here...</div>
+          </div>
+
+          <!-- GitHub Profile Lookup -->
+          <div class="dt-card">
+            <div class="dt-card-title">🐙 GitHub Profile Lookup</div>
+            <div style="display:flex;gap:6px;">
+              <input class="dt-input" style="min-height:0;resize:none;" id="ghProfileInput" placeholder="GitHub username..." onkeydown="if(event.key==='Enter')lookupGhProfile()"/>
+              <button class="dt-btn" onclick="lookupGhProfile()">🔍</button>
+            </div>
+            <div id="ghProfileResult"><div style="color:var(--muted);font-size:11px">Enter a GitHub username above</div></div>
+          </div>
+
+          <!-- Timestamp Converter -->
+          <div class="dt-card">
+            <div class="dt-card-title">🕐 Unix Timestamp Converter</div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input class="dt-input" style="min-height:0;resize:none;" id="tsInput" placeholder="Unix timestamp or ISO date..."/>
+              <button class="dt-btn" onclick="convertTimestamp()">Convert</button>
+            </div>
+            <button class="dt-btn" style="align-self:flex-start" onclick="document.getElementById('tsInput').value=Math.floor(Date.now()/1000);convertTimestamp()">⏱ Now</button>
+            <div class="dt-output" id="tsOutput">Result will appear here...</div>
+          </div>
+
+          <!-- UUID Generator -->
+          <div class="dt-card">
+            <div class="dt-card-title">🔖 UUID / Random Generator</div>
+            <div class="uuid-grid" id="uuidList"></div>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="genUUIDs()">🔄 Generate 3</button>
+              <button class="dt-btn" onclick="genNanoid()">⚡ NanoID</button>
+              <button class="dt-btn" onclick="genRandom()">🎲 Random Int</button>
+            </div>
+            <div class="dt-output" id="randomOut" style="min-height:28px;"></div>
+          </div>
+
+          <!-- Cron Explainer -->
+          <div class="dt-card">
+            <div class="dt-card-title">⏰ Cron Expression Explainer</div>
+            <input class="dt-input" style="min-height:0;resize:none;" id="cronInput" value="0 9 * * 1-5" oninput="explainCron()" placeholder="e.g. 0 9 * * 1-5"/>
+            <div class="cron-display" id="cronDisplay">Every weekday at 9:00 AM</div>
+            <div class="cron-human" id="cronNext"></div>
+            <div class="dt-btn-row" style="flex-wrap:wrap;">
+              <button class="dt-btn" onclick="setCron('* * * * *')">Every min</button>
+              <button class="dt-btn" onclick="setCron('0 * * * *')">Every hour</button>
+              <button class="dt-btn" onclick="setCron('0 0 * * *')">Daily midnight</button>
+              <button class="dt-btn" onclick="setCron('0 9 * * 1-5')">Weekdays 9am</button>
+              <button class="dt-btn" onclick="setCron('0 0 1 * *')">Monthly</button>
+            </div>
+          </div>
+
+          <!-- Lorem Ipsum Generator -->
+          <div class="dt-card">
+            <div class="dt-card-title">📝 Lorem Ipsum / Placeholder</div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input class="dt-input" style="min-height:0;resize:none;width:60px;" type="number" id="loremCount" value="3" min="1" max="20"/>
+              <select class="dt-input" style="min-height:0;resize:none;" id="loremType">
+                <option value="paragraphs">Paragraphs</option>
+                <option value="sentences">Sentences</option>
+                <option value="words">Words</option>
+              </select>
+              <button class="dt-btn" onclick="genLorem()">Generate</button>
+            </div>
+            <div class="lorem-output" id="loremOutput">Click Generate to create placeholder text...</div>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="copyDt('loremOutput')">📋 Copy</button>
+              <button class="dt-btn" onclick="loremToEditor()">→ Editor</button>
+            </div>
+          </div>
+
+          <!-- ASCII Art / Code Art -->
+          <div class="dt-card">
+            <div class="dt-card-title">🎨 ASCII Art Generator</div>
+            <input class="dt-input" style="min-height:0;resize:none;" id="asciiInput" placeholder="Enter text..." maxlength="12"/>
+            <div class="dt-btn-row">
+              <button class="dt-btn" onclick="genAscii('banner')">Banner</button>
+              <button class="dt-btn" onclick="genAscii('block')">Block</button>
+              <button class="dt-btn" onclick="genAscii('mini')">Mini</button>
+              <button class="dt-btn" onclick="copyDt('asciiOutput')">📋 Copy</button>
+            </div>
+            <div class="dt-output" id="asciiOutput" style="font-size:9px;line-height:1.2;letter-spacing:1px;">ASCII art will appear here...</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== QUIZ TAB ====== -->
+    <div class="panel" id="panel-quiz">
+      <div class="quiz-panel">
+        <div class="quiz-setup" id="quizSetup">
+          <div class="input-label">Select Topic</div>
+          <div class="quiz-topic-grid" id="quizTopicGrid"></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="input-label" style="margin:0">Difficulty</div>
+            <div class="options-row" id="quizDiffRow">
+              <div class="opt-btn active" onclick="toggleQuizDiff(this,'all')">All</div>
+              <div class="opt-btn" onclick="toggleQuizDiff(this,'beginner')">🟢 Beginner</div>
+              <div class="opt-btn" onclick="toggleQuizDiff(this,'intermediate')">🟡 Intermediate</div>
+              <div class="opt-btn" onclick="toggleQuizDiff(this,'advanced')">🔴 Advanced</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="startQuiz()" id="startQuizBtn" style="max-width:200px;"><span>🎯</span> Start Quiz</button>
+        </div>
+        <div id="quizActive" style="display:none;flex-direction:column;gap:12px;">
+          <div class="quiz-progress">
+            <span id="quizQNum">Q 1/10</span>
+            <div class="quiz-prog-bar"><div class="quiz-prog-fill" id="quizProgFill" style="width:10%"></div></div>
+            <span id="quizScoreDisplay">Score: 0</span>
+            <span class="quiz-streak" id="quizStreakBadge" style="display:none">🔥 <span id="quizStreakNum">0</span> streak</span>
+          </div>
+          <div class="quiz-card" id="quizCard">
+            <div class="quiz-q-text" id="quizQText"></div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="quiz-explain" id="quizExplain" style="display:none;"></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="nextQuizQ()" id="nextQuizBtn" style="display:none;max-width:160px;">Next →</button>
+            <button class="btn btn-secondary" onclick="endQuiz()" style="max-width:120px;">End Quiz</button>
+          </div>
+        </div>
+        <div id="quizResult" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ====== FLASHCARD TAB ====== -->
+    <div class="panel" id="panel-flashcard">
+      <div class="flashcard-panel">
+        <div>
+          <div class="input-label">Select Deck</div>
+          <div class="fc-deck-bar" id="fcDeckBar"></div>
+        </div>
+        <div class="fc-card-wrap" onclick="flipCard()">
+          <div class="fc-card" id="fcCard">
+            <div class="fc-face fc-front">
+              <div class="fc-term" id="fcFront">Select a deck to start</div>
+              <div class="fc-hint" id="fcFrontHint">Click to reveal answer</div>
+            </div>
+            <div class="fc-face fc-back">
+              <div class="fc-def" id="fcBack"></div>
+            </div>
+          </div>
+        </div>
+        <div class="fc-nav">
+          <button class="btn btn-secondary" onclick="fcPrev()" style="padding:6px 14px;font-size:12px;">← Prev</button>
+          <span class="fc-counter" id="fcCounter">0 / 0</span>
+          <button class="btn btn-secondary" onclick="fcNext()" style="padding:6px 14px;font-size:12px;">Next →</button>
+        </div>
+        <div class="fc-rating" id="fcRating" style="display:none;">
+          <button class="fc-rate-btn fc-easy" onclick="fcRate('easy')">😊 Easy</button>
+          <button class="fc-rate-btn fc-ok" onclick="fcRate('ok')">🤔 OK</button>
+          <button class="fc-rate-btn fc-hard" onclick="fcRate('hard')">😵 Hard</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-secondary" onclick="fcShuffle()" style="font-size:12px;padding:7px 14px;">🔀 Shuffle</button>
+          <button class="btn btn-secondary" onclick="fcReset()" style="font-size:12px;padding:7px 14px;">↺ Reset</button>
+          <span id="fcStats" style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== INTERVIEW PREP TAB ====== -->
+    <div class="panel" id="panel-interview">
+      <div class="interview-panel">
+        <div>
+          <div class="input-label">Interview Question Bank</div>
+          <div class="iv-setup-row">
+            <select class="iv-select" id="ivTopicSelect" onchange="renderInterviewQs()">
+              <option value="js">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="dsa">Data Structures & Algorithms</option>
+              <option value="system">System Design</option>
+              <option value="react">React / Frontend</option>
+              <option value="cs">CS Fundamentals</option>
+              <option value="behavioral">Behavioral / STAR</option>
+            </select>
+            <select class="iv-select" id="ivDiffSelect" onchange="renderInterviewQs()">
+              <option value="all">All Difficulties</option>
+              <option value="easy">🟢 Easy</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="hard">🔴 Hard</option>
+            </select>
+            <button class="btn btn-primary" style="padding:7px 14px;font-size:12px;" onclick="askAIInterview()">🤖 AI Mock Interview</button>
+          </div>
+        </div>
+        <div class="iv-qa-list" id="ivQaList"></div>
+      </div>
+    </div>
+
+    <!-- ====== LEARNING ROADMAP TAB ====== -->
+    <div class="panel" id="panel-roadmap">
+      <div class="roadmap-panel">
+        <div>
+          <div class="input-label">Learning Path</div>
+          <div class="roadmap-lang-bar" id="roadmapLangBar"></div>
+        </div>
+        <div id="roadmapTrack" class="roadmap-track"></div>
+      </div>
+    </div>
+
+    <!-- ====== DOCS / MDN SEARCH TAB ====== -->
+    <div class="panel" id="panel-docs">
+      <div class="docs-panel">
+        <div>
+          <div class="input-label">Search Documentation (MDN Web Docs API + caniuse)</div>
+          <div class="docs-search-row">
+            <input type="text" id="docsInput" placeholder="e.g. Array.prototype.flatMap, CSS grid, fetch API..." onkeydown="if(event.key==='Enter')searchDocs()"/>
+            <button class="btn btn-primary" style="flex:none;padding:9px 16px;" onclick="searchDocs()">🔍 Search</button>
+          </div>
+        </div>
+        <div class="docs-source-bar">
+          <div class="docs-source-btn active" id="docsSrc-mdn" onclick="setDocsSource('mdn',this)">📘 MDN</div>
+          <div class="docs-source-btn" id="docsSrc-caniuse" onclick="setDocsSource('caniuse',this)">🌐 Can I Use</div>
+          <div class="docs-source-btn" id="docsSrc-devdocs" onclick="setDocsSource('devdocs',this)">📗 DevDocs</div>
+        </div>
+        <div id="docsResults"><div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">Search MDN, Can I Use, or DevDocs above 👆</div></div>
+      </div>
+    </div>
+
+    <!-- ====== AI IMAGE GENERATION TAB ====== -->
+    <div class="panel" id="panel-aiimage">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🖼️ AI Image Generator — Pollinations.ai (Free, No Key)</div>
+          <textarea class="question-textarea" id="imgPromptInput" placeholder="Describe the image you want to generate... e.g. 'futuristic city skyline at night, cyberpunk style, neon lights'"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <div>
+            <div class="input-label" style="margin-bottom:4px">Style</div>
+            <div class="options-row" id="imgStyleRow">
+              <div class="opt-btn active" onclick="setImgOpt(this,'imgStyle','photorealistic')">📷 Photo</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgStyle','digital art')">🎨 Digital Art</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgStyle','anime')">🎌 Anime</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgStyle','oil painting')">🖌️ Oil Paint</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgStyle','pixel art')">👾 Pixel</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgStyle','minimalist')">⬜ Minimal</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <div>
+            <div class="input-label" style="margin-bottom:4px">Size</div>
+            <div class="options-row" id="imgSizeRow">
+              <div class="opt-btn active" onclick="setImgOpt(this,'imgSize','512x512')">512×512</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgSize','1024x512')">1024×512</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgSize','512x1024')">512×1024</div>
+              <div class="opt-btn" onclick="setImgOpt(this,'imgSize','1024x1024')">1024×1024</div>
+            </div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="generateImage()" id="genImgBtn">🖼️ Generate Image</button>
+          <button class="btn btn-secondary" onclick="enhanceImgPrompt()">✨ Enhance Prompt</button>
+          <button class="btn btn-secondary" onclick="saveImgToVault()" id="saveImgVaultBtn" style="display:none">🗄️ Save to Vault</button>
+        </div>
+        <div id="imgOutput" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;width:100%;padding:30px">✨ Enter a prompt and click Generate Image</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== AI TRANSLATOR TAB ====== -->
+    <div class="panel" id="panel-translate">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🌍 AI Translator — MyMemory API (Free)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <select id="translateFrom" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:8px;font-size:12px;outline:none;cursor:pointer;">
+              <option value="en">🇺🇸 English</option>
+              <option value="es">🇪🇸 Spanish</option>
+              <option value="fr">🇫🇷 French</option>
+              <option value="de">🇩🇪 German</option>
+              <option value="it">🇮🇹 Italian</option>
+              <option value="pt">🇵🇹 Portuguese</option>
+              <option value="ru">🇷🇺 Russian</option>
+              <option value="zh">🇨🇳 Chinese</option>
+              <option value="ja">🇯🇵 Japanese</option>
+              <option value="ko">🇰🇷 Korean</option>
+              <option value="ar">🇸🇦 Arabic</option>
+              <option value="hi">🇮🇳 Hindi</option>
+            </select>
+            <button class="btn btn-secondary" onclick="swapLangs()" style="padding:7px 12px;font-size:16px;">⇄</button>
+            <select id="translateTo" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:8px;font-size:12px;outline:none;cursor:pointer;">
+              <option value="es">🇪🇸 Spanish</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="fr">🇫🇷 French</option>
+              <option value="de">🇩🇪 German</option>
+              <option value="it">🇮🇹 Italian</option>
+              <option value="pt">🇵🇹 Portuguese</option>
+              <option value="ru">🇷🇺 Russian</option>
+              <option value="zh">🇨🇳 Chinese</option>
+              <option value="ja">🇯🇵 Japanese</option>
+              <option value="ko">🇰🇷 Korean</option>
+              <option value="ar">🇸🇦 Arabic</option>
+              <option value="hi">🇮🇳 Hindi</option>
+            </select>
+            <button class="btn btn-primary" onclick="translateText()" style="padding:7px 18px;">🌍 Translate</button>
+          </div>
+          <textarea class="question-textarea" id="translateInput" placeholder="Enter text to translate..." style="min-height:120px;"></textarea>
+        </div>
+        <div>
+          <div class="input-label">Translation</div>
+          <div id="translateOutput" style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:13px;min-height:100px;font-size:14px;line-height:1.7;color:var(--text);">Translation will appear here...</div>
+          <div id="translateMeta" style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:5px;"></div>
+        </div>
+        <div>
+          <div class="input-label">Code Comment Translator (AI-Powered)</div>
+          <textarea class="code-textarea" id="codeCommentInput" placeholder="Paste code with comments to translate them..." style="min-height:100px;"></textarea>
+          <button class="btn btn-primary" onclick="translateCodeComments()" style="margin-top:8px;max-width:280px;">🤖 Translate Code Comments</button>
+          <div id="codeCommentOutput" style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:13px;min-height:60px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#abb2bf;margin-top:8px;display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== WEATHER API TAB ====== -->
+    <div class="panel" id="panel-weather">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🌤️ Weather — Open-Meteo API (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+            <input type="text" id="weatherCityInput" placeholder="City name (e.g. Mumbai, London, Tokyo)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchWeather()"/>
+            <button class="btn btn-primary" onclick="fetchWeather()" style="padding:9px 18px;">🔍 Get Weather</button>
+            <button class="btn btn-secondary" onclick="fetchMyLocation()" style="padding:9px 14px;">📍 My Location</button>
+          </div>
+        </div>
+        <div id="weatherOutput" style="display:flex;flex-direction:column;gap:12px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🌤️ Enter a city or use My Location to get current weather</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== TECH NEWS TAB ====== -->
+    <div class="panel" id="panel-news">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">📰 Tech News — HackerNews API (Free, Live)</div>
+          <div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;">
+            <div class="opt-btn active" id="newsTypeTop" onclick="setNewsType('top',this)">🔥 Top Stories</div>
+            <div class="opt-btn" id="newsTypeNew" onclick="setNewsType('new',this)">🆕 New</div>
+            <div class="opt-btn" id="newsTypeBest" onclick="setNewsType('best',this)">⭐ Best</div>
+            <div class="opt-btn" id="newsTypeAsk" onclick="setNewsType('ask',this)">❓ Ask HN</div>
+            <div class="opt-btn" id="newsTypeShow" onclick="setNewsType('show',this)">🎉 Show HN</div>
+            <button class="btn btn-secondary" onclick="loadNews()" style="padding:5px 14px;font-size:12px;margin-left:auto;">🔄 Refresh</button>
+          </div>
+        </div>
+        <div id="newsOutput" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">Loading HackerNews stories...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== FILE VAULT TAB ====== -->
+    <div class="panel" id="panel-filevault">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🗄️ File Vault — Lifetime Local Storage</div>
+          <div style="background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);border-radius:10px;padding:12px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
+            📌 Files are stored permanently in your browser's IndexedDB — they survive page refreshes and browser restarts. No server, no upload limit. Clear browser data to remove.
+          </div>
+          <!-- Drop zone -->
+          <div id="vaultDropZone" style="border:2px dashed var(--border);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);"
+            onclick="document.getElementById('vaultFileInput').click()"
+            ondragover="vaultDragOver(event)" ondragleave="vaultDragLeave(event)" ondrop="vaultDrop(event)">
+            <div style="font-size:36px;margin-bottom:8px;">📂</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Drop files here or click to browse</div>
+            <div style="font-size:11px;color:var(--muted);">Any file type — images, PDFs, code, videos, archives — stored permanently</div>
+            <input type="file" id="vaultFileInput" multiple style="display:none" onchange="vaultHandleFiles(this.files)"/>
+          </div>
+        </div>
+        <!-- Search + stats bar -->
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="vaultSearch" placeholder="🔍 Search files by name or type..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;outline:none;" oninput="renderVault()"/>
+          <span id="vaultStats" style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;"></span>
+          <button class="btn btn-secondary" onclick="clearVault()" style="padding:7px 12px;font-size:11px;color:var(--danger);border-color:var(--danger);">🗑 Clear All</button>
+        </div>
+        <!-- File grid -->
+        <div id="vaultGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;overflow-y:auto;max-height:calc(100vh - 400px);padding-bottom:10px;">
+          <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px;font-size:13px;">No files yet. Drop or click to upload files above ☝️</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ====== NPM PACKAGE INFO TAB ====== -->
+    <div class="panel" id="panel-npminfo">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">📦 npm Package Info — npm Registry API (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+            <input type="text" id="npmPkgInput" placeholder="e.g. react, lodash, axios, express..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchNpmPkg()"/>
+            <button class="btn btn-primary" onclick="fetchNpmPkg()" style="padding:9px 18px;">🔍 Lookup</button>
+            <button class="btn btn-secondary" onclick="searchNpmPkgs()" style="padding:9px 14px;">🔎 Search</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="npmQuickBtns">
+            <span style="font-size:10px;color:var(--muted);align-self:center;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Popular:</span>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='react';fetchNpmPkg()">react</button>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='lodash';fetchNpmPkg()">lodash</button>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='axios';fetchNpmPkg()">axios</button>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='express';fetchNpmPkg()">express</button>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='typescript';fetchNpmPkg()">typescript</button>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='next';fetchNpmPkg()">next</button>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='tailwindcss';fetchNpmPkg()">tailwindcss</button>
+            <button class="tbtn" onclick="document.getElementById('npmPkgInput').value='vite';fetchNpmPkg()">vite</button>
+          </div>
+        </div>
+        <div id="npmPkgOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">📦 Enter a package name to get full registry info</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== GITHUB REPO SEARCH TAB ====== -->
+    <div class="panel" id="panel-ghsearch">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🐙 GitHub Repo Search — GitHub API (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="ghRepoInput" placeholder="Search repos e.g. machine learning, react hooks, rust cli..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')searchGhRepos()"/>
+            <select id="ghRepoLang" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="">Any Language</option>
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="cpp">C++</option>
+              <option value="go">Go</option>
+              <option value="rust">Rust</option>
+              <option value="kotlin">Kotlin</option>
+              <option value="swift">Swift</option>
+              <option value="ruby">Ruby</option>
+              <option value="php">PHP</option>
+            </select>
+            <select id="ghRepoSort" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="stars">⭐ Stars</option>
+              <option value="forks">🍴 Forks</option>
+              <option value="updated">🕐 Updated</option>
+            </select>
+            <button class="btn btn-primary" onclick="searchGhRepos()" style="padding:9px 18px;">🔍 Search</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+            <span style="font-size:10px;color:var(--muted);align-self:center;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Trending:</span>
+            <button class="tbtn" onclick="document.getElementById('ghRepoInput').value='awesome coding interview';searchGhRepos()">coding interview</button>
+            <button class="tbtn" onclick="document.getElementById('ghRepoInput').value='system design';searchGhRepos()">system design</button>
+            <button class="tbtn" onclick="document.getElementById('ghRepoInput').value='algorithms data structures';searchGhRepos()">algorithms</button>
+            <button class="tbtn" onclick="document.getElementById('ghRepoInput').value='free programming books';searchGhRepos()">free books</button>
+          </div>
+        </div>
+        <div id="ghRepoOutput" style="display:flex;flex-direction:column;gap:8px;overflow-y:auto;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🐙 Search GitHub repos — no API key needed for public search</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== CAN I USE / MDN TAB ====== -->
+    <div class="panel" id="panel-caniuse">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🌐 Can I Use — Browser Support + MDN Docs (Free APIs)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="caniuseInput" placeholder="e.g. css grid, flexbox, fetch, webp, service worker..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')searchCaniuse()"/>
+            <button class="btn btn-primary" onclick="searchCaniuse()" style="padding:9px 18px;">🔍 Check Support</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='css grid';searchCaniuse()">css grid</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='webp';searchCaniuse()">webp</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='fetch';searchCaniuse()">fetch API</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='web components';searchCaniuse()">web components</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='service worker';searchCaniuse()">service worker</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='webassembly';searchCaniuse()">webassembly</button>
+          </div>
+        </div>
+        <div id="caniuseOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🌐 Search a CSS/JS/HTML feature to check browser support</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== DEV QUOTES TAB ====== -->
+    <div class="panel" id="panel-devquotes">
+      <div class="question-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div class="input-label">💬 Dev & Programming Quotes (Free APIs — No Key)</div>
+          <div style="display:flex;gap:7px;">
+            <button class="btn btn-primary" onclick="fetchDevQuote()" style="padding:8px 16px;font-size:12px;">🎲 Random Quote</button>
+            <button class="btn btn-secondary" onclick="fetchProgrammingJoke()" style="padding:8px 16px;font-size:12px;">😂 Dev Joke</button>
+            <button class="btn btn-secondary" onclick="fetchMultipleQuotes()" style="padding:8px 16px;font-size:12px;">📚 Load 5 Quotes</button>
+          </div>
+        </div>
+        <div id="devQuoteOutput" style="display:flex;flex-direction:column;gap:14px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">💬 Click "Random Quote" for programming wisdom or "Dev Joke" for a laugh</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== IP / DNS LOOKUP TAB ====== -->
+    <div class="panel" id="panel-iplookup">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🌍 IP / DNS Lookup — ipapi + dns.google (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="ipLookupInput" placeholder="IP address or domain (e.g. 8.8.8.8, github.com)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')lookupIP()"/>
+            <button class="btn btn-primary" onclick="lookupIP()" style="padding:9px 18px;">🔍 Lookup</button>
+            <button class="btn btn-secondary" onclick="fetchMyIP()" style="padding:9px 14px;">📍 My IP</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="tbtn" onclick="document.getElementById('ipLookupInput').value='github.com';lookupIP()">github.com</button>
+            <button class="tbtn" onclick="document.getElementById('ipLookupInput').value='google.com';lookupIP()">google.com</button>
+            <button class="tbtn" onclick="document.getElementById('ipLookupInput').value='8.8.8.8';lookupIP()">8.8.8.8</button>
+            <button class="tbtn" onclick="document.getElementById('ipLookupInput').value='1.1.1.1';lookupIP()">1.1.1.1 (Cloudflare)</button>
+          </div>
+        </div>
+        <div id="ipLookupOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🌍 Enter an IP or domain to get geolocation + DNS info</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== COLOR PALETTE API TAB ====== -->
+    <div class="panel" id="panel-colorapi">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🎨 Color Palette Generator — TheColorAPI (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="color" id="colorApiPicker" value="#00e5ff" style="width:44px;height:40px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;padding:2px;"/>
+            <input type="text" id="colorApiInput" placeholder="Hex color (e.g. #00e5ff) or name (e.g. tomato)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchColorPalette()" oninput="document.getElementById('colorApiPicker').value=this.value.startsWith('#')?this.value:'#00e5ff'"/>
+            <button class="btn btn-primary" onclick="fetchColorPalette()" style="padding:9px 18px;">🎨 Generate Palette</button>
+            <button class="btn btn-secondary" onclick="randomColorPalette()" style="padding:9px 14px;">🎲 Random</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="tbtn" onclick="document.getElementById('colorApiInput').value='#7c3aed';fetchColorPalette()">#7c3aed</button>
+            <button class="tbtn" onclick="document.getElementById('colorApiInput').value='#10b981';fetchColorPalette()">#10b981</button>
+            <button class="tbtn" onclick="document.getElementById('colorApiInput').value='#ef4444';fetchColorPalette()">#ef4444</button>
+            <button class="tbtn" onclick="document.getElementById('colorApiInput').value='#f59e0b';fetchColorPalette()">#f59e0b</button>
+            <button class="tbtn" onclick="document.getElementById('colorApiInput').value='#3b82f6';fetchColorPalette()">#3b82f6</button>
+          </div>
+          <div id="colorApiPaletteScheme" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Scheme:</span>
+            <div class="opt-btn active" id="schemeMonochrome" onclick="setColorScheme(this,'monochrome')">Monochrome</div>
+            <div class="opt-btn" id="schemeAnalogic" onclick="setColorScheme(this,'analogic')">Analogic</div>
+            <div class="opt-btn" id="schemeComplement" onclick="setColorScheme(this,'complement')">Complement</div>
+            <div class="opt-btn" id="schemeSplitComplement" onclick="setColorScheme(this,'split-complement')">Split</div>
+            <div class="opt-btn" id="schemeTriad" onclick="setColorScheme(this,'triad')">Triad</div>
+            <div class="opt-btn" id="schemeQuad" onclick="setColorScheme(this,'quad')">Quad</div>
+          </div>
+        </div>
+        <div id="colorApiOutput" style="display:flex;flex-direction:column;gap:12px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🎨 Pick a color or enter a hex to generate a full palette</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ====== PYPI PACKAGE INFO TAB ====== -->
+    <div class="panel" id="panel-pypi">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🐍 PyPI Package Search — Python Package Index (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="pypiInput" placeholder="e.g. numpy, pandas, scikit-learn, torch..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchPyPI()"/>
+            <button class="btn btn-primary" onclick="fetchPyPI()" style="padding:9px 18px;">🔍 Search</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Popular:</span>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='numpy';fetchPyPI()">numpy</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='pandas';fetchPyPI()">pandas</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='torch';fetchPyPI()">torch</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='tensorflow';fetchPyPI()">tensorflow</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='scikit-learn';fetchPyPI()">scikit-learn</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='fastapi';fetchPyPI()">fastapi</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='requests';fetchPyPI()">requests</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='langchain';fetchPyPI()">langchain</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='transformers';fetchPyPI()">transformers</button>
+            <button class="tbtn" onclick="document.getElementById('pypiInput').value='matplotlib';fetchPyPI()">matplotlib</button>
+          </div>
+        </div>
+        <div id="pypiOutput">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">🐍 Search a Python package to see full details, install command, and links</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== CRATES.IO (RUST) TAB ====== -->
+    <div class="panel" id="panel-crates">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🦀 Crates.io — Rust Package Registry (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="cratesInput" placeholder="e.g. serde, tokio, actix-web, clap..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchCrates()"/>
+            <button class="btn btn-primary" onclick="fetchCrates()" style="padding:9px 18px;">🔍 Search</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Popular:</span>
+            <button class="tbtn" onclick="document.getElementById('cratesInput').value='serde';fetchCrates()">serde</button>
+            <button class="tbtn" onclick="document.getElementById('cratesInput').value='tokio';fetchCrates()">tokio</button>
+            <button class="tbtn" onclick="document.getElementById('cratesInput').value='rayon';fetchCrates()">rayon</button>
+            <button class="tbtn" onclick="document.getElementById('cratesInput').value='actix-web';fetchCrates()">actix-web</button>
+            <button class="tbtn" onclick="document.getElementById('cratesInput').value='clap';fetchCrates()">clap</button>
+            <button class="tbtn" onclick="document.getElementById('cratesInput').value='anyhow';fetchCrates()">anyhow</button>
+          </div>
+        </div>
+        <div id="cratesOutput">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">🦀 Search a Rust crate to see details, download stats, and Cargo.toml snippet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== HUGGING FACE MODELS TAB ====== -->
+    <div class="panel" id="panel-huggingface">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🤗 Hugging Face Model Hub — AI/ML Models (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="hfInput" placeholder="Search models (e.g. bert, llama, stable-diffusion, whisper)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchHFModels()"/>
+            <select id="hfTaskFilter" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="">All Tasks</option>
+              <option value="text-generation">Text Generation</option>
+              <option value="text-classification">Text Classification</option>
+              <option value="token-classification">NER / Token Class.</option>
+              <option value="question-answering">Question Answering</option>
+              <option value="summarization">Summarization</option>
+              <option value="translation">Translation</option>
+              <option value="image-classification">Image Classification</option>
+              <option value="object-detection">Object Detection</option>
+              <option value="text-to-image">Text-to-Image</option>
+              <option value="automatic-speech-recognition">Speech Recognition</option>
+              <option value="feature-extraction">Embeddings</option>
+              <option value="fill-mask">Fill Mask</option>
+            </select>
+            <button class="btn btn-primary" onclick="fetchHFModels()" style="padding:9px 18px;">🔍 Search</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Trending:</span>
+            <button class="tbtn" onclick="document.getElementById('hfInput').value='bert';fetchHFModels()">BERT</button>
+            <button class="tbtn" onclick="document.getElementById('hfInput').value='llama';fetchHFModels()">LLaMA</button>
+            <button class="tbtn" onclick="document.getElementById('hfInput').value='stable-diffusion';fetchHFModels()">Stable Diffusion</button>
+            <button class="tbtn" onclick="document.getElementById('hfInput').value='whisper';fetchHFModels()">Whisper</button>
+            <button class="tbtn" onclick="document.getElementById('hfInput').value='mistral';fetchHFModels()">Mistral</button>
+            <button class="tbtn" onclick="document.getElementById('hfInput').value='gpt2';fetchHFModels()">GPT-2</button>
+            <button class="tbtn" onclick="document.getElementById('hfInput').value='clip';fetchHFModels()">CLIP</button>
+          </div>
+        </div>
+        <div id="hfOutput">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">🤗 Search Hugging Face to discover AI/ML models for any task</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== ML / AI PAPERS TAB ====== -->
+    <div class="panel" id="panel-mlpapers">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">📄 ML / AI Research Papers — Semantic Scholar (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="papersInput" placeholder="Search papers (e.g. attention mechanism, LLM, diffusion models, RAG)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchPapers()"/>
+            <button class="btn btn-primary" onclick="fetchPapers()" style="padding:9px 18px;">🔍 Search</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Classics:</span>
+            <button class="tbtn" onclick="document.getElementById('papersInput').value='attention is all you need';fetchPapers()">Attention Is All You Need</button>
+            <button class="tbtn" onclick="document.getElementById('papersInput').value='BERT language model';fetchPapers()">BERT</button>
+            <button class="tbtn" onclick="document.getElementById('papersInput').value='GPT large language model';fetchPapers()">GPT</button>
+            <button class="tbtn" onclick="document.getElementById('papersInput').value='retrieval augmented generation';fetchPapers()">RAG</button>
+            <button class="tbtn" onclick="document.getElementById('papersInput').value='diffusion models image generation';fetchPapers()">Diffusion</button>
+            <button class="tbtn" onclick="document.getElementById('papersInput').value='reinforcement learning from human feedback';fetchPapers()">RLHF</button>
+          </div>
+        </div>
+        <div id="papersOutput">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">📄 Search ML & AI research papers from Semantic Scholar's 200M+ paper database</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== SQL PLAYGROUND TAB ====== -->
+    <div class="panel" id="panel-dbplayground">
+      <div class="code-panel" style="height:100%;">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;flex-wrap:wrap;">
+          <div class="input-label" style="margin:0;">🗃️ SQL Playground — In-Browser (SQLite via sql.js)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;">
+            <select id="sqlTemplate" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:7px;font-size:11px;outline:none;" onchange="loadSqlTemplate(this.value)">
+              <option value="">Load Template…</option>
+              <option value="create_insert">CREATE + INSERT</option>
+              <option value="select_join">SELECT with JOIN</option>
+              <option value="aggregate">GROUP BY + Aggregates</option>
+              <option value="subquery">Subquery</option>
+              <option value="window">Window Functions</option>
+              <option value="cte">CTE (WITH clause)</option>
+              <option value="ml_schema">ML Dataset Schema</option>
+            </select>
+            <button class="tbtn" onclick="runSQL()">▶ Run SQL</button>
+            <button class="tbtn" onclick="clearSQL()">🗑 Clear</button>
+            <button class="tbtn" onclick="aiExplainSQL()">🤖 AI Explain</button>
+            <button class="tbtn" onclick="aiOptimizeSQL()">⚡ AI Optimize</button>
+          </div>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden;min-height:0;">
+          <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+            <textarea id="sqlEditor" style="flex:1;background:var(--card);border:none;color:#abb2bf;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;resize:none;outline:none;line-height:1.75;tab-size:2;min-height:180px;" placeholder="-- Write your SQL here
+SELECT * FROM users WHERE age > 25 ORDER BY name LIMIT 10;"></textarea>
+            <div style="background:var(--bg2);border-top:1px solid var(--border);padding:8px 12px;">
+              <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Result</div>
+              <div id="sqlOutput" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent3);max-height:180px;overflow-y:auto;white-space:pre-wrap;">Run a SQL query to see results here...</div>
+            </div>
+            <div id="sqlAiOutput" style="background:var(--bg2);border-top:1px solid var(--border);padding:10px 14px;display:none;max-height:140px;overflow-y:auto;font-size:12px;line-height:1.7;"></div>
+          </div>
+          <div style="width:200px;flex-shrink:0;border-left:1px solid var(--border);background:var(--bg2);padding:12px;overflow-y:auto;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">DB Reference</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="font-size:10px;color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace;margin-top:4px;">SQL Commands</div>
+              ${['SELECT','INSERT INTO','UPDATE','DELETE','CREATE TABLE','DROP TABLE','ALTER TABLE','JOIN / LEFT JOIN','GROUP BY','ORDER BY','HAVING','DISTINCT','LIMIT / OFFSET','UNION','INDEX','TRANSACTION'].map(c=>`<div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);padding:2px 4px;border-radius:3px;cursor:pointer;transition:color .15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'" onclick="insertSqlSnippet('${c}')">${c}</div>`).join('')}
+              <div style="font-size:10px;color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace;margin-top:8px;">Aggregate Fns</div>
+              ${['COUNT()','SUM()','AVG()','MIN()','MAX()','COALESCE()','NULLIF()'].map(c=>`<div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);padding:2px 4px;border-radius:3px;cursor:pointer;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'" onclick="insertSqlSnippet('${c}')">${c}</div>`).join('')}
+              <div style="font-size:10px;color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace;margin-top:8px;">DB Types</div>
+              <div style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">INTEGER, TEXT, REAL, BLOB, NULL, VARCHAR, BOOLEAN, TIMESTAMP, JSON</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== BIG-O CHART TAB ====== -->
+    <div class="panel" id="panel-bigochart">
+      <div class="question-panel" style="gap:14px;">
+        <div class="input-label">📈 Big-O Complexity Cheat Sheet</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">
+          <!-- Data Structure Table -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+            <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Data Structure Operations</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace;">
+              <tr style="color:var(--muted);font-size:10px;"><th style="text-align:left;padding:3px 5px;">Structure</th><th>Access</th><th>Search</th><th>Insert</th><th>Delete</th></tr>
+              ${[['Array','O(1)','O(n)','O(n)','O(n)'],['Stack','O(n)','O(n)','O(1)','O(1)'],['Queue','O(n)','O(n)','O(1)','O(1)'],['Linked List','O(n)','O(n)','O(1)','O(1)'],['Hash Table','-','O(1)*','O(1)*','O(1)*'],['BST','O(log n)*','O(log n)*','O(log n)*','O(log n)*'],['AVL Tree','O(log n)','O(log n)','O(log n)','O(log n)'],['Heap','-','O(n)','O(log n)','O(log n)'],['Trie','-','O(k)','O(k)','O(k)']].map((r,i)=>`<tr style="background:${i%2?'transparent':'rgba(0,229,255,.03)'}"><td style="padding:3px 5px;color:var(--accent3)">${r[0]}</td>${r.slice(1).map(v=>`<td style="text-align:center;color:${v.includes('1)')?'#6ee7b7':v.includes('log')?'#fcd34d':v.includes('n)')?'#f38ba8':'var(--muted)'}">${v}</td>`).join('')}</tr>`).join('')}
+            </table>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">* Average case</div>
+          </div>
+          <!-- Sorting Algorithms -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+            <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Sorting Algorithms</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace;">
+              <tr style="color:var(--muted);font-size:10px;"><th style="text-align:left;padding:3px 5px;">Algorithm</th><th>Best</th><th>Avg</th><th>Worst</th><th>Space</th></tr>
+              ${[['Bubble Sort','O(n)','O(n²)','O(n²)','O(1)'],['Insertion Sort','O(n)','O(n²)','O(n²)','O(1)'],['Selection Sort','O(n²)','O(n²)','O(n²)','O(1)'],['Merge Sort','O(n log n)','O(n log n)','O(n log n)','O(n)'],['Quick Sort','O(n log n)','O(n log n)','O(n²)','O(log n)'],['Heap Sort','O(n log n)','O(n log n)','O(n log n)','O(1)'],['Tim Sort','O(n)','O(n log n)','O(n log n)','O(n)'],['Counting Sort','O(n+k)','O(n+k)','O(n+k)','O(k)'],['Radix Sort','O(nk)','O(nk)','O(nk)','O(n+k)']].map((r,i)=>`<tr style="background:${i%2?'transparent':'rgba(0,229,255,.03)'}"><td style="padding:3px 5px;color:var(--accent3)">${r[0]}</td>${r.slice(1).map(v=>`<td style="text-align:center;color:${v.startsWith('O(n)')&&!v.includes('n²')&&!v.includes('nk')?'#6ee7b7':v.includes('log')?'#fcd34d':v.includes('²')?'#f38ba8':'var(--muted)'}">${v}</td>`).join('')}</tr>`).join('')}
+            </table>
+          </div>
+          <!-- Graph Algorithms -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+            <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Graph Algorithms</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace;">
+              <tr style="color:var(--muted);font-size:10px;"><th style="text-align:left;padding:3px 5px;">Algorithm</th><th>Time</th><th>Space</th></tr>
+              ${[['BFS','O(V+E)','O(V)'],['DFS','O(V+E)','O(V)'],["Dijkstra's",'O((V+E)log V)','O(V)'],['Bellman-Ford','O(VE)','O(V)'],['Floyd-Warshall','O(V³)','O(V²)'],["Prim's MST",'O(E log V)','O(V)'],["Kruskal's MST",'O(E log E)','O(V)'],['Topological Sort','O(V+E)','O(V)'],['Tarjan SCC','O(V+E)','O(V)']].map((r,i)=>`<tr style="background:${i%2?'transparent':'rgba(0,229,255,.03)'}"><td style="padding:3px 5px;color:var(--accent3)">${r[0]}</td><td style="text-align:center;color:var(--warn);font-size:10px;">${r[1]}</td><td style="text-align:center;color:var(--muted);font-size:10px;">${r[2]}</td></tr>`).join('')}
+            </table>
+          </div>
+          <!-- ML Algorithm Complexity -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+            <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">ML Algorithm Complexity</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace;">
+              <tr style="color:var(--muted);font-size:10px;"><th style="text-align:left;padding:3px 5px;">Algorithm</th><th>Train</th><th>Predict</th></tr>
+              ${[['Linear Regression','O(nd²)','O(d)'],['Logistic Regression','O(ndi)','O(d)'],['Decision Tree','O(nd log n)','O(depth)'],['Random Forest','O(t·nd log n)','O(t·depth)'],['SVM','O(n²d~n³d)','O(sv·d)'],['KNN','O(1)','O(nd)'],['K-Means','O(nki)','O(k)'],['Neural Net','O(layers·n)','O(layers)'],['Naive Bayes','O(nd)','O(d)']].map((r,i)=>`<tr style="background:${i%2?'transparent':'rgba(0,229,255,.03)'}"><td style="padding:3px 5px;color:var(--accent3)">${r[0]}</td><td style="text-align:center;color:var(--warn);font-size:10px;">${r[1]}</td><td style="text-align:center;color:#6ee7b7;font-size:10px;">${r[2]}</td></tr>`).join('')}
+            </table>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">n=samples d=features k=clusters i=iterations t=trees sv=support vectors</div>
+          </div>
+          <!-- Complexity Legend -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+            <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Complexity Legend</div>
+            ${[['O(1)','Constant','#6ee7b7','Best — same time always'],['O(log n)','Logarithmic','#a7f3d0','Excellent — binary search'],['O(n)','Linear','#fcd34d','Good — single pass'],['O(n log n)','Linearithmic','#fbbf24','Fair — good sorts'],['O(n²)','Quadratic','#f97316','Bad — nested loops'],['O(n³)','Cubic','#ef4444','Very bad — 3 nested loops'],['O(2ⁿ)','Exponential','#dc2626','Terrible — recursive brute'],['O(n!)','Factorial','#991b1b','Worst — permutations']].map(([n,l,c,d])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><div style="width:90px;font-family:'JetBrains Mono',monospace;font-size:11px;color:${c};font-weight:700;">${n}</div><div style="font-size:11px;color:var(--muted);">${l} — ${d}</div></div>`).join('')}
+          </div>
+          <!-- DB Query Complexity -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+            <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Database Indexing</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace;">
+              <tr style="color:var(--muted);font-size:10px;"><th style="text-align:left;padding:3px 5px;">Operation</th><th>No Index</th><th>B-Tree Idx</th><th>Hash Idx</th></tr>
+              ${[['Point Lookup','O(n)','O(log n)','O(1)*'],['Range Query','O(n)','O(log n+k)','O(n)'],['Insert','O(1)','O(log n)','O(1)*'],['Delete','O(n)','O(log n)','O(1)*'],['Full Scan','O(n)','O(n)','O(n)']].map((r,i)=>`<tr style="background:${i%2?'transparent':'rgba(0,229,255,.03)'}"><td style="padding:3px 5px;color:var(--accent3)">${r[0]}</td>${r.slice(1).map(v=>`<td style="text-align:center;color:${v.includes('1)')?'#6ee7b7':v.includes('log')?'#fcd34d':'#f38ba8'}">${v}</td>`).join('')}</tr>`).join('')}
+            </table>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">k = result count · * = average case</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="aiExplainBigO()" style="padding:8px 18px;font-size:12px;">🤖 Ask AI: Explain any algorithm complexity</button>
+          <input type="text" id="bigOAskInput" placeholder="e.g. Why is quicksort O(n log n) on average?" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;" onkeydown="if(event.key==='Enter')aiExplainBigO()"/>
+        </div>
+        <div id="bigOAiOutput" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:13px;line-height:1.7;"></div>
+      </div>
+    </div>
+
+    <!-- ====== LEETCODE STATS TAB ====== -->
+    <div class="panel" id="panel-leetstats">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🏆 LeetCode Profile Stats (Free API — No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="leetInput" placeholder="LeetCode username (e.g. neal_wu, tourist)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchLeetStats()"/>
+            <button class="btn btn-primary" onclick="fetchLeetStats()" style="padding:9px 18px;">🔍 Fetch Stats</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace;">Powered by alfa-leetcode-api (open-source, free)</div>
+        </div>
+        <div id="leetOutput">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">🏆 Enter a LeetCode username to see their stats, solved count, and ranking</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== EXERCISM CHALLENGES TAB ====== -->
+    <div class="panel" id="panel-exercism">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🏋️ Exercism Coding Challenges — Track Explorer (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <select id="exercismTrack" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-size:12px;outline:none;" onchange="fetchExercism()">
+              <option value="python">Python</option>
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="rust">Rust</option>
+              <option value="go">Go</option>
+              <option value="java">Java</option>
+              <option value="cpp">C++</option>
+              <option value="haskell">Haskell</option>
+              <option value="elixir">Elixir</option>
+              <option value="ruby">Ruby</option>
+              <option value="kotlin">Kotlin</option>
+              <option value="swift">Swift</option>
+              <option value="scala">Scala</option>
+              <option value="r">R</option>
+              <option value="julia">Julia</option>
+              <option value="lua">Lua</option>
+              <option value="sql">SQL</option>
+              <option value="bash">Bash</option>
+            </select>
+            <select id="exercismDiff" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-size:12px;outline:none;" onchange="fetchExercism()">
+              <option value="">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+            <button class="btn btn-primary" onclick="fetchExercism()" style="padding:9px 18px;">📋 Load Exercises</button>
+          </div>
+        </div>
+        <div id="exercismOutput">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">🏋️ Select a language track and load exercises from Exercism</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== GITIGNORE GENERATOR TAB ====== -->
+    <div class="panel" id="panel-gitignore">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🚫 .gitignore Generator — gitignore.io API (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="gitignoreInput" placeholder="Technologies (e.g. python,node,react,macos,vscode)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchGitignore()"/>
+            <button class="btn btn-primary" onclick="fetchGitignore()" style="padding:9px 18px;">🚫 Generate</button>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Presets:</span>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='python,virtualenv,vscode';fetchGitignore()">Python + VSCode</button>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='node,react,vscode';fetchGitignore()">Node + React</button>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='java,gradle,intellij';fetchGitignore()">Java + IntelliJ</button>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='rust,cargo';fetchGitignore()">Rust + Cargo</button>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='go,vscode';fetchGitignore()">Go</button>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='python,jupyter,macos,vscode';fetchGitignore()">Data Science</button>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='flutter,dart,androidstudio';fetchGitignore()">Flutter</button>
+            <button class="tbtn" onclick="document.getElementById('gitignoreInput').value='terraform,aws,node';fetchGitignore()">DevOps/Infra</button>
+          </div>
+        </div>
+        <div id="gitignoreOutput">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px">🚫 Enter technologies and generate a production-ready .gitignore</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== AI CODE REVIEW PRO TAB ====== -->
+    <div class="panel" id="panel-aicoderev">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🤖 AI Code Review Pro — Deep Analysis with Gemini</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <div class="opt-btn active" id="aicr-lang-auto" onclick="setAICRLang(this,'auto')">🔍 Auto-detect</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'python')">Python</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'javascript')">JavaScript</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'typescript')">TypeScript</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'java')">Java</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'cpp')">C++</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'rust')">Rust</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'go')">Go</div>
+            <div class="opt-btn" onclick="setAICRLang(this,'sql')">SQL</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Focus:</span>
+            <div class="opt-btn active" id="aicr-focus-all" onclick="toggleAICRFocus(this,'all')">All</div>
+            <div class="opt-btn" id="aicr-focus-security" onclick="toggleAICRFocus(this,'security')">🔒 Security</div>
+            <div class="opt-btn" id="aicr-focus-performance" onclick="toggleAICRFocus(this,'performance')">⚡ Performance</div>
+            <div class="opt-btn" id="aicr-focus-style" onclick="toggleAICRFocus(this,'style')">🎨 Style</div>
+            <div class="opt-btn" id="aicr-focus-bugs" onclick="toggleAICRFocus(this,'bugs')">🐛 Bugs</div>
+            <div class="opt-btn" id="aicr-focus-ml" onclick="toggleAICRFocus(this,'ml')">🧠 ML Best Practices</div>
+            <div class="opt-btn" id="aicr-focus-db" onclick="toggleAICRFocus(this,'db')">🗃️ DB / Query</div>
+          </div>
+          <textarea class="code-textarea" id="aicrInput" placeholder="Paste your code here for a deep AI review..." style="min-height:200px;"></textarea>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="runAICodeReview()" id="aicrBtn">🤖 Run Deep Code Review</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('aicrInput').value=document.getElementById('codeEditor').value">📋 Paste from Editor</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('aicrInput').value='';document.getElementById('aicrOutput').innerHTML='<div style=color:var(--muted);text-align:center;padding:40px>Paste code above and run a review</div>'">🗑 Clear</button>
+        </div>
+        <div id="aicrOutput" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;min-height:80px;font-size:13px;line-height:1.75;color:var(--text);">
+          <div style="color:var(--muted);text-align:center;padding:40px">Paste code above and click "Run Deep Code Review" for a detailed analysis</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== COUNTRIES INFO TAB ====== -->
+    <div class="panel" id="panel-countries">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🌍 Country Explorer — REST Countries API (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="countryInput" placeholder="Country name (e.g. India, Germany, Brazil, Japan)..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')fetchCountryInfo()"/>
+            <button class="btn btn-primary" onclick="fetchCountryInfo()" style="padding:9px 18px;">🔍 Search</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="tbtn" onclick="document.getElementById('countryInput').value='India';fetchCountryInfo()">🇮🇳 India</button>
+            <button class="tbtn" onclick="document.getElementById('countryInput').value='United States';fetchCountryInfo()">🇺🇸 USA</button>
+            <button class="tbtn" onclick="document.getElementById('countryInput').value='Germany';fetchCountryInfo()">🇩🇪 Germany</button>
+            <button class="tbtn" onclick="document.getElementById('countryInput').value='Japan';fetchCountryInfo()">🇯🇵 Japan</button>
+            <button class="tbtn" onclick="document.getElementById('countryInput').value='Brazil';fetchCountryInfo()">🇧🇷 Brazil</button>
+            <button class="tbtn" onclick="document.getElementById('countryInput').value='Australia';fetchCountryInfo()">🇦🇺 Australia</button>
+          </div>
+        </div>
+        <div id="countryOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🌍 Search any country to get population, capital, currency, languages, and more</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== TRIVIA QUIZ TAB ====== -->
+    <div class="panel" id="panel-trivia">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">🎲 Trivia Quiz — Open Trivia DB (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <select id="triviaCategory" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="">Any Category</option>
+              <option value="18">Computers</option>
+              <option value="19">Mathematics</option>
+              <option value="9">General Knowledge</option>
+              <option value="17">Science &amp; Nature</option>
+              <option value="23">History</option>
+              <option value="22">Geography</option>
+              <option value="11">Film</option>
+              <option value="12">Music</option>
+              <option value="15">Video Games</option>
+            </select>
+            <select id="triviaDifficulty" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="">Any Difficulty</option>
+              <option value="easy">🟢 Easy</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="hard">🔴 Hard</option>
+            </select>
+            <input type="number" id="triviaAmount" value="5" min="1" max="10" style="width:60px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:8px;font-size:12px;outline:none;text-align:center;"/>
+            <button class="btn btn-primary" onclick="fetchTrivia()" style="padding:9px 18px;">🎲 Load Questions</button>
+          </div>
+        </div>
+        <div id="triviaOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🎲 Select a category and click "Load Questions" to start the trivia!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== QR CODE GENERATOR TAB ====== -->
+    <div class="panel" id="panel-qrcode">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">📲 QR Code Generator — qrserver.com (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="text" id="qrInput" placeholder="URL, text, phone, email, Wi-Fi — any content..." style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')generateQR()"/>
+            <select id="qrSize" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="150">150px</option>
+              <option value="200" selected>200px</option>
+              <option value="300">300px</option>
+              <option value="400">400px</option>
+              <option value="500">500px</option>
+            </select>
+            <button class="btn btn-primary" onclick="generateQR()" style="padding:9px 18px;">📲 Generate QR</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="tbtn" onclick="document.getElementById('qrInput').value='https://github.com';generateQR()">GitHub</button>
+            <button class="tbtn" onclick="document.getElementById('qrInput').value='https://developer.mozilla.org';generateQR()">MDN Docs</button>
+            <button class="tbtn" onclick="document.getElementById('qrInput').value='Hello, CodeMind!';generateQR()">Text</button>
+            <button class="tbtn" onclick="document.getElementById('qrInput').value='WIFI:T:WPA;S:MyNetwork;P:MyPassword;;';generateQR()">Wi-Fi Config</button>
+          </div>
+        </div>
+        <div id="qrOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">📲 Enter any text or URL and generate a QR code instantly</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== RANDOM USER GENERATOR TAB ====== -->
+    <div class="panel" id="panel-randomuser">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">👤 Random User Generator — randomuser.me (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="number" id="randomUserCount" value="6" min="1" max="20" style="width:70px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:8px;font-size:12px;outline:none;text-align:center;"/>
+            <select id="randomUserNat" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="">Any Nationality</option>
+              <option value="us">🇺🇸 US</option>
+              <option value="gb">🇬🇧 UK</option>
+              <option value="au">🇦🇺 AU</option>
+              <option value="de">🇩🇪 DE</option>
+              <option value="fr">🇫🇷 FR</option>
+              <option value="no">🇳🇴 NO</option>
+              <option value="in">🇮🇳 IN</option>
+              <option value="br">🇧🇷 BR</option>
+            </select>
+            <button class="btn btn-primary" onclick="fetchRandomUsers()" style="padding:9px 18px;">👤 Generate Users</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Great for testing UIs, populating mock databases, or generating fake data for demos.</div>
+        </div>
+        <div id="randomUserOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">👤 Click "Generate Users" to create random user profiles with photos, names, emails and addresses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== CURRENCY EXCHANGE TAB ====== -->
+    <div class="panel" id="panel-currency">
+      <div class="question-panel">
+        <div>
+          <div class="input-label">💱 Currency Exchange — open.er-api.com (Free, No Key)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <input type="number" id="currencyAmount" value="1" min="0" step="any" style="width:100px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"/>
+            <select id="currencyFrom" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="GBP">🇬🇧 GBP</option>
+              <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option><option value="CAD">🇨🇦 CAD</option>
+              <option value="CHF">🇨🇭 CHF</option><option value="CNY">🇨🇳 CNY</option><option value="INR">🇮🇳 INR</option>
+              <option value="MXN">🇲🇽 MXN</option><option value="BRL">🇧🇷 BRL</option><option value="KRW">🇰🇷 KRW</option>
+              <option value="SGD">🇸🇬 SGD</option><option value="HKD">🇭🇰 HKD</option><option value="SEK">🇸🇪 SEK</option>
+              <option value="NOK">🇳🇴 NOK</option><option value="AED">🇦🇪 AED</option><option value="SAR">🇸🇦 SAR</option>
+              <option value="ZAR">🇿🇦 ZAR</option><option value="RUB">🇷🇺 RUB</option>
+            </select>
+            <span style="font-size:18px;color:var(--muted);">→</span>
+            <select id="currencyTo" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;outline:none;">
+              <option value="EUR">🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option><option value="GBP">🇬🇧 GBP</option>
+              <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option><option value="CAD">🇨🇦 CAD</option>
+              <option value="CHF">🇨🇭 CHF</option><option value="CNY">🇨🇳 CNY</option><option value="INR">🇮🇳 INR</option>
+              <option value="MXN">🇲🇽 MXN</option><option value="BRL">🇧🇷 BRL</option><option value="KRW">🇰🇷 KRW</option>
+              <option value="SGD">🇸🇬 SGD</option><option value="HKD">🇭🇰 HKD</option><option value="SEK">🇸🇪 SEK</option>
+              <option value="NOK">🇳🇴 NOK</option><option value="AED">🇦🇪 AED</option><option value="SAR">🇸🇦 SAR</option>
+              <option value="ZAR">🇿🇦 ZAR</option><option value="RUB">🇷🇺 RUB</option>
+            </select>
+            <button class="btn btn-primary" onclick="fetchExchangeRates()" style="padding:9px 18px;">💱 Convert</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">Quick:</span>
+            <button class="tbtn" onclick="document.getElementById('currencyFrom').value='USD';document.getElementById('currencyTo').value='EUR';fetchExchangeRates()">USD→EUR</button>
+            <button class="tbtn" onclick="document.getElementById('currencyFrom').value='USD';document.getElementById('currencyTo').value='INR';fetchExchangeRates()">USD→INR</button>
+            <button class="tbtn" onclick="document.getElementById('currencyFrom').value='EUR';document.getElementById('currencyTo').value='GBP';fetchExchangeRates()">EUR→GBP</button>
+            <button class="tbtn" onclick="document.getElementById('currencyFrom').value='USD';document.getElementById('currencyTo').value='JPY';fetchExchangeRates()">USD→JPY</button>
+            <button class="tbtn" onclick="document.getElementById('currencyFrom').value='BTC';document.getElementById('currencyTo').value='USD';fetchExchangeRates()">BTC→USD</button>
+          </div>
+        </div>
+        <div id="currencyOutput" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">💱 Enter an amount and currency pair to see live exchange rates</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span class="sb-item sb-lang" id="sbLang">JS</span>
+  <span class="sb-item">·</span>
+  <span class="sb-item sb-mode" id="sbMode">Solve</span>
+  <span class="sb-item">·</span>
+  <span class="sb-item" id="sbPlatform">LeetCode</span>
+  <span style="margin-left:auto" class="sb-item" id="sbExecInfo"></span>
+</div>
+
+</div><!-- #app -->
+
+<script src="js/codemind_state.js"></script>
+<script src="js/codemind_ui.js"></script>
+<script src="js/codemind_runner.js"></script>
+<script src="js/codemind_gemini.js"></script>
+<script src="js/codemind_shortcuts.js"></script>
+<script src="js/codemind_github.js"></script>
+<script src="js/codemind_regex_diff.js"></script>
+<script src="js/codemind_cheatsheet.js"></script>
+<script src="js/codemind_devtools.js"></script>
+<script src="js/codemind_quiz.js"></script>
+<script src="js/codemind_flashcards.js"></script>
+<script src="js/codemind_interview.js"></script>
+<script src="js/codemind_roadmap.js"></script>
+<script src="js/codemind_docs.js"></script>
+<script src="js/codemind_integrations_a.js"></script>
+<script src="js/codemind_vault.js"></script>
+<script src="js/codemind_init_ext.js"></script>
+<script src="js/codemind_integrations_b.js"></script>
+<script src="js/codemind_sql_leetcode.js"></script>
+<script src="js/codemind_gitignore.js"></script>
+<script src="js/codemind_aicr.js"></script>
+<script src="js/codemind_safety_handler.js"></script>
+<script src="js/codemind_feature_handler.js"></script>
+<script src="js/codemind_api_controller.js"></script>
+<script src="js/codemind_api_e2e_handler.js"></script>
+<script src="js/codemind_site_handler.js"></script>
+</body>
+</html>

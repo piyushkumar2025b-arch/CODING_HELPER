@@ -1,0 +1,100 @@
+/* Extra CodeMind interaction polish: neon touch, focus, and utility states. */
+:root {
+  --neon-cyan: #00e5ff;
+  --neon-mint: #10b981;
+  --neon-pink: #ec4899;
+  --neon-violet: #8b5cf6;
+  --neon-ring: 0 0 0 1px rgba(0, 229, 255, .7), 0 0 18px rgba(0, 229, 255, .28);
+  --neon-ring-strong: 0 0 0 1px rgba(0, 229, 255, .95), 0 0 28px rgba(0, 229, 255, .45);
+}
+
+.neon-border,
+.btn,
+.tbtn,
+.mode-btn,
+.opt-btn,
+.plat-tag,
+.lang-chip,
+.docs-source-btn,
+button,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.neon-border,
+.btn:focus-visible,
+.tbtn:focus-visible,
+.mode-btn:focus-visible,
+.opt-btn:focus-visible,
+.plat-tag:focus-visible,
+.lang-chip:focus-visible,
+.docs-source-btn:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--neon-cyan) !important;
+  box-shadow: var(--neon-ring);
+}
+
+.btn:active,
+.tbtn:active,
+.mode-btn:active,
+.opt-btn:active,
+.plat-tag:active,
+.lang-chip:active,
+.docs-source-btn:active,
+.cm-touch-neon {
+  border-color: var(--neon-cyan) !important;
+  box-shadow: var(--neon-ring-strong);
+  transform: translateY(0) scale(.99);
+}
+
+.cm-neon-hover:hover {
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 18px rgba(0, 229, 255, .22);
+}
+
+.cm-glass {
+  background: rgba(24, 24, 31, .74) !important;
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.cm-soft-divider {
+  border-color: rgba(0, 229, 255, .18) !important;
+}
+
+.cm-status-pass { color: var(--neon-mint) !important; }
+.cm-status-warn { color: #f59e0b !important; }
+.cm-status-fail { color: #ef4444 !important; }
+
+[aria-invalid="true"] {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, .65), 0 0 18px rgba(239, 68, 68, .22) !important;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .tbtn,
+  button,
+  .lang-chip,
+  .mode-btn,
+  .opt-btn,
+  .plat-tag {
+    min-height: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+  }
+}
