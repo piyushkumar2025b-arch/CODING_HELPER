@@ -920,6 +920,24 @@
       },
     },
 
+    {
+      id: 'dictionary',
+      label: 'Free Dictionary API',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/hello');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: `✓ hello = "${d[0]?.meanings?.[0]?.definitions?.[0]?.definition || ''}"` };
+      },
+      async call({ word }) {
+        const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
   ]; // end REGISTRY
 
   /* Build a quick lookup map */

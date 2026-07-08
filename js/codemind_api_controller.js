@@ -595,6 +595,19 @@
       }
     },
 
+    {
+      id: 'dictionary',
+      label: 'Free Dictionary API',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/hello');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: `✓ hello = "${d[0]?.meanings?.[0]?.definitions?.[0]?.definition || ''}"` };
+      }
+    },
+
   ];
 
   // ── 3. INJECT KEYS INTO APP GLOBALS ─────────────────────
