@@ -184,4 +184,4 @@ if "bundled_html" not in st.session_state:
     st.session_state["bundled_html"] = raw
 
 html = _inject_secrets(_inject_deploy_mode(st.session_state["bundled_html"]))
-st.iframe(_make_data_url(html), height=1400, scrolling=False)
+st.iframe(_make_data_url(html), height=1400)
