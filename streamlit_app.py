@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
 from pathlib import Path
 
 import streamlit as st
-import streamlit.components.v1 as components
-
 APP_DIR = Path(__file__).parent
 HTML_PATH = APP_DIR / "codemind.html"
 LOCAL_DB_URL = "http://127.0.0.1:8787"
@@ -38,6 +37,20 @@ st.markdown(
     }
     .stApp { overflow: hidden; }
 </style>
+""",
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+<div style="padding:14px 18px;margin:10px 12px 0;border:1px solid rgba(0,229,255,.22);border-radius:14px;
+background:linear-gradient(180deg, rgba(0,229,255,.08), rgba(255,255,255,.02));color:#d9f8ff;
+font-family:system-ui,sans-serif">
+  <div style="font-weight:800;font-size:16px;margin-bottom:4px;">Connect your API keys to unlock the full app</div>
+  <div style="font-size:13px;line-height:1.55;">
+    Paste the keys for the providers you want to use. CodeMind will retain them locally and try fallback providers when one service is unavailable.
+  </div>
+</div>
 """,
     unsafe_allow_html=True,
 )
@@ -115,6 +128,11 @@ def _inject_deploy_mode(html: str) -> str:
     return html.replace("<body>", f"<body>{script}", 1)
 
 
+def _make_data_url(html: str) -> str:
+    encoded = base64.b64encode(html.encode("utf-8")).decode("ascii")
+    return f"data:text/html;base64,{encoded}"
+
+
 def _start_local_database_if_available() -> None:
     host = _request_host()
     if host and not host.startswith(("localhost", "127.0.0.1", "[::1]")):
@@ -166,4 +184,4 @@ if "bundled_html" not in st.session_state:
     st.session_state["bundled_html"] = raw
 
 html = _inject_secrets(_inject_deploy_mode(st.session_state["bundled_html"]))
-components.html(html, height=1400, scrolling=False)
+st.iframe(_make_data_url(html), height=1400, scrolling=False)

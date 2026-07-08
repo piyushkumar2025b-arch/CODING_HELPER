@@ -1,0 +1,54 @@
+/* Extra motion - additive only */
+
+@keyframes cmFloatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes cmShimmer {
+  0% { background-position: -120% 0; }
+  100% { background-position: 120% 0; }
+}
+
+@keyframes cmPulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(0,229,255,0.18); }
+  70% { box-shadow: 0 0 0 12px rgba(0,229,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,229,255,0); }
+}
+
+.api-badge.connected .dot,
+.dot.connected,
+.cm_dot.ok,
+.cm_dot.warn,
+.cm_dot.fail,
+.vsc-term-status.running {
+  animation: cmPulseRing 2.4s infinite;
+}
+
+.logo-icon,
+.cm_logo,
+.vsc-term-icon,
+.terminal-header-label,
+.sidebar-label,
+.cm_group_label,
+.cm_atp_group_label {
+  animation: cmFloatSlow 4s ease-in-out infinite;
+}
+
+.mode-btn.active,
+.tab.active,
+.terminal-btn-run,
+.cm_atp_footer_btn.primary,
+.cm_btn_save:hover,
+.vsc-ctrl-btn:hover {
+  background-size: 200% 100%;
+  background-image: linear-gradient(90deg, rgba(0,229,255,0.10), rgba(124,58,237,0.14), rgba(0,229,255,0.10));
+  animation: cmShimmer 8s linear infinite;
+}
+
+.terminal-pane.active,
+.panel.active,
+.cm_hub_panel,
+.cm_atp_banner {
+  transition: transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease;
+}

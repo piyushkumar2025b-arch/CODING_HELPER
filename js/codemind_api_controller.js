@@ -154,7 +154,7 @@
       label: 'Cerebras Cloud',
       group: 'Keyed',
       needsKey: true,
-      keyRef: KEYS.cloudflare,
+      keyRef: KEYS.groq,
       keyPlaceholder: 'cerebras_...',
       keyHint: 'console.cerebras.ai → API key (developer tier availability can change)',
       async test() {
@@ -167,7 +167,7 @@
       label: 'Cloudflare Workers',
       group: 'Keyed',
       needsKey: true,
-      keyRef: KEYS.huggingface,
+      keyRef: KEYS.cloudflare,
       keyPlaceholder: 'CF_API_TOKEN...',
       keyHint: 'dash.cloudflare.com → Workers & AI → API Tokens (free quota, no card in many cases)',
       async test() {
@@ -688,6 +688,9 @@
     },
 
   ];
+
+  const EXTRA_TESTS = Array.isArray(window.CM_API_EXTRA_TESTS) ? window.CM_API_EXTRA_TESTS : [];
+  if (EXTRA_TESTS.length) TESTS.push(...EXTRA_TESTS);
 
   // ── 3. INJECT KEYS INTO APP GLOBALS ─────────────────────
 

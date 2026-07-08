@@ -1,0 +1,76 @@
+/* Extra glass layers - additive only */
+
+:root {
+  --cm-glass-bg: rgba(13, 13, 20, 0.58);
+  --cm-glass-border: rgba(0, 229, 255, 0.16);
+  --cm-glass-highlight: rgba(255, 255, 255, 0.08);
+}
+
+.api-badge,
+.mode-btn.active,
+.tab.active,
+.opt-btn.active,
+.plat-tag.active-lc,
+.plat-tag.active-cf,
+.plat-tag.active-gen,
+.terminal-btn-run,
+.terminal-btn-clear,
+.terminal-btn-ghost,
+.cm_atp_row,
+.cm_row,
+.cm_key_block,
+.cm_hub_panel,
+.cm_hub_row,
+.cm_glass,
+.card,
+.panel-card,
+.tool-card,
+.dt-card,
+.quiz-card,
+.flashcard,
+.sql-card,
+.docs-card {
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+.api-badge,
+.cm_atp_row,
+.cm_row,
+.cm_key_block,
+.cm_hub_row,
+.cm_glass,
+.card,
+.panel-card,
+.tool-card,
+.dt-card,
+.quiz-card,
+.flashcard,
+.sql-card,
+.docs-card {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.05), transparent 34%),
+    linear-gradient(135deg, rgba(0,229,255,0.03), rgba(124,58,237,0.02));
+  border-color: var(--cm-glass-border);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.api-badge:hover,
+.cm_atp_row:hover,
+.cm_row:hover,
+.cm_hub_row:hover,
+.card:hover,
+.panel-card:hover,
+.tool-card:hover,
+.dt-card:hover,
+.quiz-card:hover,
+.flashcard:hover,
+.sql-card:hover,
+.docs-card:hover {
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(0, 229, 255, 0.08);
+}
