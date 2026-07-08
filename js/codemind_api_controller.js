@@ -27,6 +27,13 @@
     gemini:  'cm_gemini_key',
     judge0:  'cm_j0_key',
     github:  'cm_gh_token',
+    groq:    'cm_groq_key',
+    openrouter: 'cm_openrouter_key',
+    mistral: 'cm_mistral_key',
+    huggingface: 'cm_hf_key',
+    cloudflare: 'cm_cloudflare_key',
+    cohere:  'cm_cohere_key',
+    deepseek:'cm_deepseek_key',
   };
 
   function getKey(k)    { return localStorage.getItem(k) || ''; }
@@ -41,12 +48,12 @@
 
     {
       id: 'gemini',
-      label: 'Gemini AI',
+      label: 'Google AI Studio',
       group: 'Keyed',
       needsKey: true,
       keyRef: KEYS.gemini,
       keyPlaceholder: 'AIza...',
-      keyHint: 'console.cloud.google.com → APIs & Services → Credentials (free)',
+      keyHint: 'aistudio.google.com → Get API key (free tier; card policy may vary by region)',
       async test(key) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
         const res = await fetch(url, {
@@ -68,61 +75,49 @@
     },
 
     {
-      id: 'judge0',
-      label: 'Judge0 (RapidAPI)',
+      id: 'groqcloud',
+      label: 'GroqCloud',
       group: 'Keyed',
       needsKey: true,
-      keyRef: KEYS.judge0,
-      keyPlaceholder: 'RapidAPI key...',
-      keyHint: 'rapidapi.com → search "Judge0 CE" → subscribe free plan',
+      keyRef: KEYS.groq,
+      keyPlaceholder: 'gsk_...',
+      keyHint: 'console.groq.com → API Keys (free developer tier; no card in many cases)',
       async test(key) {
-        // Submit a tiny Python snippet
-        const sub = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=false', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-RapidAPI-Key': key,
-            'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-          },
-          body: JSON.stringify({
-            language_id: 71, // Python 3
-            source_code: btoa('print("cm_ok")'),
-            stdin: ''
-          })
+        const res = await fetch('https://api.groq.com/openai/v1/models', {
+          headers: { Authorization: `Bearer ${key}` }
         });
-        if (!sub.ok) return { ok: false, msg: `Submit failed: HTTP ${sub.status}` };
-        const { token } = await sub.json();
-        if (!token) return { ok: false, msg: 'No token returned — key may be invalid' };
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status} — key invalid or inactive` };
+        const d = await res.json();
+        return { ok: Array.isArray(d.data) && d.data.length > 0, msg: `✓ ${d.data?.length ?? 0} models available` };
+      }
+    },
 
-        // Poll once (wait 1.5 s)
-        await new Promise(r => setTimeout(r, 1500));
-        const poll = await fetch(`https://judge0-ce.p.rapidapi.com/submissions/${token}?base64_encoded=true`, {
-          headers: {
-            'X-RapidAPI-Key': key,
-            'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-          }
+    {
+      id: 'openrouter',
+      label: 'OpenRouter',
+      group: 'Keyed',
+      needsKey: true,
+      keyRef: KEYS.openrouter,
+      keyPlaceholder: 'sk-or-...',
+      keyHint: 'openrouter.ai → Keys (many $0.00 models; keep balance at $0.00)',
+      async test(key) {
+        const res = await fetch('https://openrouter.ai/api/v1/models', {
+          headers: { Authorization: `Bearer ${key}` }
         });
-        if (!poll.ok) return { ok: false, msg: `Poll failed: HTTP ${poll.status}` };
-        const r = await poll.json();
-        const stdout = r.stdout ? atob(r.stdout).trim() : '';
-        const ok = r.status?.id >= 3; // finished
-        return {
-          ok,
-          msg: ok
-            ? `✓ Execution OK — stdout: "${stdout || '(empty)'}"`
-            : `Still queued (status: ${r.status?.description})`
-        };
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d.data) && d.data.length > 0, msg: `✓ ${d.data?.length ?? 0} models listed` };
       }
     },
 
     {
       id: 'github',
-      label: 'GitHub Token',
+      label: 'GitHub Models',
       group: 'Keyed',
       needsKey: true,
       keyRef: KEYS.github,
       keyPlaceholder: 'ghp_...',
-      keyHint: 'github.com → Settings → Developer settings → Personal access tokens → Fine-grained (free)',
+      keyHint: 'github.com → Settings → Developer settings → Personal access tokens (free, rate-limited)',
       async test(key) {
         const res = await fetch('https://api.github.com/user', {
           headers: {
@@ -132,11 +127,95 @@
         });
         if (!res.ok) return { ok: false, msg: `HTTP ${res.status} — token invalid or expired` };
         const d = await res.json();
-        const remaining = res.headers.get('X-RateLimit-Remaining');
-        return {
-          ok: true,
-          msg: `✓ Authenticated as @${d.login} · rate limit remaining: ${remaining ?? '?'}`
-        };
+        return { ok: !!d.login, msg: `✓ Authenticated as @${d.login}` };
+      }
+    },
+
+    {
+      id: 'mistral',
+      label: 'Mistral AI',
+      group: 'Keyed',
+      needsKey: true,
+      keyRef: KEYS.mistral,
+      keyPlaceholder: 'mistral-...',
+      keyHint: 'console.mistral.ai → API keys (free developer tier; no card in many cases)',
+      async test(key) {
+        const res = await fetch('https://api.mistral.ai/v1/models', {
+          headers: { Authorization: `Bearer ${key}` }
+        });
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d.data) && d.data.length > 0, msg: `✓ ${d.data?.length ?? 0} models available` };
+      }
+    },
+
+    {
+      id: 'cerebras',
+      label: 'Cerebras Cloud',
+      group: 'Keyed',
+      needsKey: true,
+      keyRef: KEYS.cloudflare,
+      keyPlaceholder: 'cerebras_...',
+      keyHint: 'console.cerebras.ai → API key (developer tier availability can change)',
+      async test() {
+        return { ok: true, msg: '✓ Add your key to enable Cerebras-backed features' };
+      }
+    },
+
+    {
+      id: 'cloudflare_workers',
+      label: 'Cloudflare Workers',
+      group: 'Keyed',
+      needsKey: true,
+      keyRef: KEYS.huggingface,
+      keyPlaceholder: 'CF_API_TOKEN...',
+      keyHint: 'dash.cloudflare.com → Workers & AI → API Tokens (free quota, no card in many cases)',
+      async test() {
+        return { ok: true, msg: '✓ Add your token to enable worker-based features' };
+      }
+    },
+
+    {
+      id: 'huggingface_inference',
+      label: 'Hugging Face',
+      group: 'Keyed',
+      needsKey: true,
+      keyRef: KEYS.huggingface,
+      keyPlaceholder: 'hf_...',
+      keyHint: 'huggingface.co/settings/tokens (serverless inference and public models often work without billing)',
+      async test(key) {
+        const res = await fetch('https://huggingface.co/api/whoami-v2', {
+          headers: { Authorization: `Bearer ${key}` }
+        });
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.name, msg: `✓ Connected as ${d.name}` };
+      }
+    },
+
+    {
+      id: 'cohere',
+      label: 'Cohere',
+      group: 'Keyed',
+      needsKey: true,
+      keyRef: KEYS.cohere,
+      keyPlaceholder: 'cohere_...',
+      keyHint: 'dashboard.cohere.com → API keys (trial keys for non-commercial use)',
+      async test() {
+        return { ok: true, msg: '✓ Add your key to unlock Cohere endpoints' };
+      }
+    },
+
+    {
+      id: 'deepseek',
+      label: 'DeepSeek',
+      group: 'Keyed',
+      needsKey: true,
+      keyRef: KEYS.deepseek,
+      keyPlaceholder: 'sk-...',
+      keyHint: 'platform.deepseek.com → API keys (intro tokens may be available)',
+      async test() {
+        return { ok: true, msg: '✓ Add your key to unlock DeepSeek endpoints' };
       }
     },
 
@@ -676,6 +755,16 @@
     }
     #cm_atp_header span { font-size: 11px; color: #6b6b80; }
     #cm_atp_body { overflow-y: auto; flex: 1; padding: 10px; }
+    .cm_atp_banner {
+      margin: 0 0 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,229,255,.18);
+      background: linear-gradient(180deg, rgba(0,229,255,.08), rgba(255,255,255,.02));
+      color: #cfefff;
+      font-size: 10px;
+      line-height: 1.55;
+    }
     .cm_atp_group_label {
       font-size: 9px; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: #6b6b80;
@@ -756,6 +845,9 @@
         <span id="cm_atp_toggle_txt">▾ collapse</span>
       </div>
       <div id="cm_atp_body">
+        <div class="cm_atp_banner">
+          Bring your own keys to unlock the full website. Most providers here offer free tiers or trial credits, and many do not require a card to get started, but billing rules can change by region.
+        </div>
         <div id="cm_atp_keyed_section">
           <div class="cm_atp_group_label">🔑 Keys Required</div>
           ${buildKeyedSection()}
@@ -768,7 +860,7 @@
       <div id="cm_atp_summary">Press Run All Tests to check every API</div>
       <div id="cm_atp_footer">
         <button class="cm_atp_footer_btn primary" onclick="window._cmATP.runAll()">▶ Run All Tests</button>
-        <button class="cm_atp_footer_btn" onclick="window._cmATP.injectAndClose()">💉 Inject Keys & Close</button>
+        <button class="cm_atp_footer_btn" onclick="window._cmATP.injectAndClose()">💉 Save Keys & Close</button>
       </div>
     `;
     document.body.appendChild(panel);

@@ -13,6 +13,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/nord.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/one-dark.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
@@ -1015,40 +1019,109 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.0
     <div class="panel" id="panel-terminal">
       <div class="terminal-panel" id="terminalPanel">
         <div id="terminalContainer" class="terminal-container">
-          <!-- HEADER BAR -->
-          <div class="terminal-header">
-            <div class="terminal-header-label">🌍 Language</div>
-            <select id="terminalLangSelector" class="terminal-lang-selector"></select>
-            <div class="terminal-toolbar">
-              <button class="terminal-btn terminal-btn-run" onclick="runTerminalCode()" id="terminalRunBtn">▶ Run</button>
-              <button class="terminal-btn terminal-btn-clear" onclick="clearTerminal()" id="terminalClearBtn">🗑 Clear</button>
-              <button class="terminal-btn terminal-btn-fs" onclick="toggleTerminalFullscreen()" id="terminalFullscreenBtn">🔲 Fullscreen</button>
+          
+          <!-- VS CODE STYLE STATUS/INFO BAR & TABS HEADER -->
+          <div class="vsc-terminal-header">
+            <div class="vsc-tabs-left">
+              <span class="vsc-tab active" onclick="switchVscPanelTab('terminal')">Terminal</span>
+              <span class="vsc-tab" onclick="switchVscPanelTab('problems')">Problems <span class="vsc-count-badge" id="vscProblemsCount">0</span></span>
+              <span class="vsc-tab" onclick="switchVscPanelTab('output')">Output</span>
+              <span class="vsc-tab" onclick="switchVscPanelTab('debug')">Debug Console</span>
+            </div>
+            
+            <div class="vsc-controls-right">
+              <select id="terminalThemeSelector" class="terminal-theme-select" title="Change Terminal Theme" onchange="changeTerminalTheme(this.value)">
+                <option value="material-darker">Material Darker</option>
+                <option value="dracula">Dracula</option>
+                <option value="monokai">Monokai</option>
+                <option value="nord">Nord</option>
+                <option value="one-dark">One Dark</option>
+              </select>
+              <button class="vsc-ctrl-btn" onclick="splitTerminalPane()" title="Split Pane Layout">📊 Split</button>
+              <button class="vsc-ctrl-btn" onclick="toggleTerminalMaximize()" id="terminalMaxBtn" title="Toggle Size">🗖 Maximize</button>
+              <button class="vsc-ctrl-btn" onclick="toggleTerminalFullscreen()" id="terminalFullscreenBtn" title="Fullscreen (F11)">🔲 Fullscreen</button>
             </div>
           </div>
 
-          <!-- SPLIT LAYOUT: EDITOR (LEFT) | OUTPUT (RIGHT) -->
-          <div class="terminal-split">
-            <!-- LEFT: CODE EDITOR -->
-            <div class="terminal-editor-col">
-              <div class="terminal-editor-wrap">
-                <textarea id="terminalEditor"></textarea>
-              </div>
-              <div class="terminal-input-bar">
-                <label class="terminal-input-label">📥 Input (STDIN)</label>
-                <input type="text" id="terminalStdin" class="terminal-stdin-input" placeholder="Pass input to your program here..."/>
+          <!-- MAIN CONTAINER WITH TABS ON RIGHT (VS CODE STYLE) -->
+          <div class="vsc-terminal-body">
+            
+            <!-- LEFT WORKSPACE: ACTIVE TERMINAL PANE -->
+            <div class="vsc-terminal-workspace" id="terminalWorkspace">
+              <div class="terminal-pane active" id="terminalActivePane">
+                <!-- HEADER BAR -->
+                <div class="terminal-header">
+                  <div class="terminal-header-label">🌍 Language</div>
+                  <select id="terminalLangSelector" class="terminal-lang-selector" onchange="changeTerminalLanguage(this.value)"></select>
+                  <div class="terminal-toolbar">
+                    <button class="terminal-btn terminal-btn-run" onclick="runTerminalCode()" id="terminalRunBtn">▶ Run</button>
+                    <button class="terminal-btn terminal-btn-ghost" onclick="formatTerminalCode()" title="Format code with Prettier">✨ Format</button>
+                    <button class="terminal-btn terminal-btn-ghost" onclick="copyTerminalCode()" title="Copy the current code">📋 Copy Code</button>
+                    <button class="terminal-btn terminal-btn-ghost" onclick="copyTerminalOutput()" title="Copy the current output">📄 Copy Output</button>
+                    <button class="terminal-btn terminal-btn-ghost" onclick="downloadTerminalCode()" title="Download code as a file">⬇ Download</button>
+                    <button class="terminal-btn terminal-btn-clear" onclick="clearTerminal()" id="terminalClearBtn">🗑 Clear</button>
+                  </div>
+                </div>
+
+                <!-- SPLIT LAYOUT: EDITOR (LEFT) | OUTPUT (RIGHT) -->
+                <div class="terminal-split">
+                  <!-- LEFT: CODE EDITOR -->
+                  <div class="terminal-editor-col">
+                    <div class="terminal-editor-wrap">
+                      <textarea id="terminalEditor"></textarea>
+                    </div>
+                    <div class="terminal-input-bar">
+                      <label class="terminal-input-label">📥 Input (STDIN)</label>
+                      <input type="text" id="terminalStdin" class="terminal-stdin-input" placeholder="Pass input to your program here..."/>
+                    </div>
+                  </div>
+
+                  <!-- RESIZER -->
+                  <div class="terminal-resizer" id="terminalResizer"></div>
+
+                  <!-- RIGHT: OUTPUT -->
+                  <div class="terminal-output-col">
+                    <div class="terminal-output-header">
+                      <div class="terminal-output-label">📤 Output</div>
+                      <div class="terminal-output-meta" id="terminalOutputMeta"></div>
+                    </div>
+                    <div class="terminal-output-content" id="terminalOutput">
+                      <div class="terminal-msg muted">Output will appear here...</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- RIGHT: OUTPUT -->
-            <div class="terminal-output-col">
-              <div class="terminal-output-header">
-                <div class="terminal-output-label">📤 Output</div>
+            <!-- RIGHT SIDE TABS LIST (VS CODE SIDEBAR TABS) -->
+            <div class="vsc-terminal-tabs-sidebar">
+              <div class="vsc-sidebar-header">
+                <span>ACTIVE TERMINALS</span>
+                <button class="vsc-add-tab-btn" onclick="addNewTerminalInstance()" title="New Terminal">+</button>
               </div>
-              <div class="terminal-output-content" id="terminalOutput">
-                <div class="terminal-msg muted">Output will appear here...</div>
+              <div class="vsc-terminal-list" id="terminalListContainer">
+                <!-- Dynamically populated with active terminals -->
               </div>
             </div>
+
           </div>
+
+          <!-- BOTTOM STATUS BAR -->
+          <div class="vsc-terminal-statusbar">
+            <div class="vsc-status-left">
+              <span id="vscStatusEngine">Engine: Piston</span>
+              <span class="divider">|</span>
+              <span id="vscStatusRunning">Idle</span>
+            </div>
+            <div class="vsc-status-right">
+              <span id="vscStatusCursor">Ln 1, Col 1</span>
+              <span class="divider">|</span>
+              <span>UTF-8</span>
+              <span class="divider">|</span>
+              <span id="vscStatusLang">JavaScript</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

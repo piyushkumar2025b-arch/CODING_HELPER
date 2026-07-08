@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // RUN CODE — NATIVE ENGINE
 // ============================================================
 let pyodideInstance = null;
@@ -52,13 +52,19 @@ async function runCode() {
     } else if (currentLang === 'python') {
       await runPython(code, t0);
     } else {
-      // First try free runners (Piston), then keyed (Judge0)
+      // Try free runners in order: Piston → Wandbox → Gemini AI → Judge0 (keyed)
       const usedPiston = await runViaPiston(code, t0);
       if (!usedPiston) {
-        if (judge0Key) {
-          await runViaJudge0(code, t0);
-        } else {
-          setOutput('⚠️ No free runner available right now. Add a Judge0 key for more options.', 'warn');
+        const usedWandbox = await runViaWandbox(code, t0);
+        if (!usedWandbox) {
+          const usedGemini = await runViaGeminiExec(code, t0);
+          if (!usedGemini) {
+            if (judge0Key) {
+              await runViaJudge0(code, t0);
+            } else {
+              setOutput('⚠️ All free runners are temporarily unavailable. Try again in a few seconds!', 'warn');
+            }
+          }
         }
       }
     }
@@ -278,6 +284,100 @@ async function runViaPiston(code, t0) {
     const output = stdout || stderr || '(no output)';
     const ok = (run.code ?? 0) === 0 && !stderr;
     setOutput(output, ok ? 'ok' : 'err', elapsed, ok ? 'Piston OK' : `Exit ${run.code ?? '?'}`);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// ---- Wandbox (free, no key) fallback for main editor ----
+const WANDBOX_COMPILER_MAP = {
+  cpp: 'gcc-head', c: 'gcc-head', java: 'openjdk-head',
+  rust: 'rust-head', go: 'go-head', ruby: 'ruby-head',
+  php: 'php-head', swift: 'swift-head', bash: 'bash',
+  perl: 'perl-head', scala: 'scala-head', haskell: 'ghc-head',
+  typescript: 'typescript-4.9.5', csharp: 'csharp',
+};
+
+async function runViaWandbox(code, t0) {
+  const compiler = WANDBOX_COMPILER_MAP[currentLang];
+  if (!compiler) return false;
+
+  setOutput('⏳ Trying Wandbox (free, no key)...', 'loading');
+  const stdin = document.getElementById('stdinInput')?.value || '';
+
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 15000);
+
+    const res = await fetch('https://wandbox.org/api/compile.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ compiler, code, stdin, save: false }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) return false;
+    const data = await res.json();
+    const elapsed = performance.now() - t0;
+    const output = data.program_output || data.program_error || data.compiler_error || '(no output)';
+    const isOk = data.status === '0' || data.status === 0;
+    setOutput(output, isOk ? 'ok' : 'err', elapsed, isOk ? 'Wandbox OK' : 'Wandbox Error');
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// ---- Gemini AI Code Execution fallback for main editor ----
+async function runViaGeminiExec(code, t0) {
+  const key = localStorage.getItem('cm_gemini_key');
+  if (!key) return false;
+
+  const langLabels = { cpp: 'C++', c: 'C', java: 'Java', rust: 'Rust', go: 'Go',
+    ruby: 'Ruby', php: 'PHP', swift: 'Swift', kotlin: 'Kotlin', scala: 'Scala',
+    typescript: 'TypeScript', csharp: 'C#', r: 'R', perl: 'Perl', haskell: 'Haskell' };
+  const langName = langLabels[currentLang] || currentLang;
+
+  setOutput('✨ Trying Gemini AI code execution...', 'loading');
+
+  const prompt = `Execute this ${langName} code and return ONLY the exact program output (stdout). If there is an error, return only the error. No explanation, no markdown.
+
+\`\`\`${currentLang}\n${code}\n\`\`\``;
+
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 20000);
+
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0, maxOutputTokens: 2048 },
+          tools: [{ codeExecution: {} }],
+        }),
+        signal: controller.signal,
+      }
+    );
+
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    const elapsed = performance.now() - t0;
+
+    let output = '';
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.executableCode) continue;
+      if (part.codeExecutionResult) { output = part.codeExecutionResult.output || ''; break; }
+      if (part.text) output = part.text.trim();
+    }
+
+    if (!output) return false;
+    output = output.replace(/^```[\w]*\n?/m, '').replace(/\n?```$/m, '').trim();
+    setOutput(output, 'ok', elapsed, 'Gemini AI ✨');
     return true;
   } catch(e) {
     return false;
