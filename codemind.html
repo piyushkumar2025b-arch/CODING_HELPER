@@ -727,6 +727,14 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.0
       <div class="dot" id="ghDot"></div>
       <span id="ghText">Gist</span>
     </div>
+    <div class="api-badge" onclick="window._cmATP?.showPanel?.()" title="Test API keys and free APIs">
+      <div class="dot connected"></div>
+      <span>API Test</span>
+    </div>
+    <div class="api-badge" onclick="window.CodeMindSite?.showDbPanel?.()" title="Saved local chats">
+      <div class="dot connected"></div>
+      <span>Chats</span>
+    </div>
     <select class="lang-select" id="globalLang" onchange="setLang(this.value)">
       <option value="javascript">JavaScript</option>
       <option value="html">HTML/CSS</option>
@@ -2270,5 +2278,6 @@ SELECT * FROM users WHERE age > 25 ORDER BY name LIMIT 10;"></textarea>
 <script src="js/codemind_api_controller.js"></script>
 <script src="js/codemind_api_e2e_handler.js"></script>
 <script src="js/codemind_site_handler.js"></script>
+<script src="js/codemind_option_api_fixes.js"></script>
 </body>
 </html>

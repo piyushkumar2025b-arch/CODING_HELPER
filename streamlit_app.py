@@ -44,6 +44,12 @@ def _load_html() -> str:
 
 
 def _secret(name: str) -> str | None:
+    secret_paths = [
+        Path.home() / ".streamlit" / "secrets.toml",
+        APP_DIR / ".streamlit" / "secrets.toml",
+    ]
+    if not any(path.exists() for path in secret_paths):
+        return None
     try:
         value = st.secrets.get(name)
     except (FileNotFoundError, KeyError, AttributeError):

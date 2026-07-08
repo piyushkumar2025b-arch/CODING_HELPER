@@ -78,8 +78,10 @@ async function runViaJudge0(code, t0) {
     return;
   }
   if (!judge0Key) {
-    setOutput(`🔑 Judge0 API key required for ${LANG_LABELS[currentLang]}.\n\nClick the "Judge0" badge in the header to add your free RapidAPI key.\nGet one at: rapidapi.com → search "Judge0 CE"\n\n✅ JavaScript & HTML run natively — no key needed!`, 'warn');
-    openModal('judge0Modal');
+    const usedPiston = await runViaPiston(code, t0);
+    if (!usedPiston) {
+      setOutput(`⚠️ No free runner is available for ${LANG_LABELS[currentLang]} right now.\n\nFallbacks tried:\n1. Browser-native runner for JavaScript/HTML\n2. Piston public runner for compiled/interpreted languages\n\nOptional: add a Judge0 RapidAPI key from the "Judge0" badge for a more reliable hosted runner.`, 'warn');
+    }
     return;
   }
 
@@ -142,6 +144,41 @@ async function runViaJudge0(code, t0) {
     }
   };
   poll();
+}
+
+async function runViaPiston(code, t0) {
+  const runtime = PISTON_RUNTIMES[currentLang];
+  if (!runtime) return false;
+
+  setOutput(`⏳ Running with free no-key runner (${runtime.language})...`, 'loading');
+  const stdin = document.getElementById('stdinInput').value.replace(/\\n/g, '\n');
+
+  try {
+    const res = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        language: runtime.language,
+        version: runtime.version,
+        files: [{ content: code }],
+        stdin
+      })
+    });
+
+    if (!res.ok) throw new Error(`Piston HTTP ${res.status}`);
+    const data = await res.json();
+    const elapsed = performance.now() - t0;
+    const run = data.run || {};
+    const compile = data.compile || {};
+    const stdout = [compile.stdout, run.stdout].filter(Boolean).join('\n').trim();
+    const stderr = [compile.stderr, run.stderr].filter(Boolean).join('\n').trim();
+    const output = stdout || stderr || '(no output)';
+    const ok = (run.code ?? 0) === 0 && !stderr;
+    setOutput(output, ok ? 'ok' : 'err', elapsed, ok ? 'Piston OK' : `Exit ${run.code ?? '?'}`);
+    return true;
+  } catch(e) {
+    return false;
+  }
 }
 
 // ---- Output setter ----

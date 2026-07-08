@@ -308,7 +308,7 @@ function copyToClipboard(text) {
 
 // Function aliases (HTML uses different names)
 const fetchHFModels = fetchHuggingFace;
-const fetchPapers = fetchMLPapers;
+var fetchPapers = (...args) => window.CodeMindOptionAPIs?.fetchPapers?.(...args) || fetchMLPapers(...args);
 
 // SQL Playground extra helpers
 function clearSQL() {

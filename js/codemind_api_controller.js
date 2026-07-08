@@ -126,8 +126,8 @@
       async test(key) {
         const res = await fetch('https://api.github.com/user', {
           headers: {
-            Authorization: `token ${key}`,
-            'User-Agent': 'CodeMind-Tester'
+            Authorization: `Bearer ${key}`,
+            Accept: 'application/vnd.github+json'
           }
         });
         if (!res.ok) return { ok: false, msg: `HTTP ${res.status} — token invalid or expired` };
@@ -162,6 +162,35 @@
     },
 
     {
+      id: 'wttr_weather',
+      label: 'Weather backup (wttr.in)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://wttr.in/London?format=j1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        const temp = d.current_condition?.[0]?.temp_C;
+        return { ok: temp !== undefined, msg: `✓ London backup weather: ${temp}°C` };
+      }
+    },
+
+    {
+      id: 'nominatim',
+      label: 'Geocoding backup (Nominatim)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://nominatim.openstreetmap.org/search?q=London&format=json&limit=1', {
+          headers: { Accept: 'application/json' }
+        });
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.length > 0, msg: d.length ? `✓ ${d[0].display_name.substring(0, 45)}...` : 'No geocoding results' };
+      }
+    },
+
+    {
       id: 'npm',
       label: 'npm Registry',
       group: 'Free',
@@ -171,6 +200,19 @@
         if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
         const d = await res.json();
         return { ok: !!d.name, msg: `✓ react@${d['dist-tags']?.latest}` };
+      }
+    },
+
+    {
+      id: 'npms',
+      label: 'npm Search backup (npms.io)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.npms.io/v2/search?q=react&size=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.results?.length > 0, msg: d.results?.length ? `✓ ${d.results[0].package.name}` : 'No packages' };
       }
     },
 
@@ -188,13 +230,26 @@
     },
 
     {
+      id: 'librariesio',
+      label: 'Package metadata backup (Libraries.io)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://libraries.io/api/search?q=numpy&per_page=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: d[0] ? `✓ ${d[0].name}` : 'No package metadata' };
+      }
+    },
+
+    {
       id: 'crates',
       label: 'crates.io',
       group: 'Free',
       needsKey: false,
       async test() {
         const res = await fetch('https://crates.io/api/v1/crates/serde', {
-          headers: { 'User-Agent': 'CodeMind-Tester' }
+          headers: { Accept: 'application/json' }
         });
         if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
         const d = await res.json();
@@ -209,12 +264,25 @@
       needsKey: false,
       async test() {
         const res = await fetch('https://api.github.com/repos/torvalds/linux', {
-          headers: { 'User-Agent': 'CodeMind-Tester' }
+          headers: { Accept: 'application/vnd.github+json' }
         });
         if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
         const d = await res.json();
         const remaining = res.headers.get('X-RateLimit-Remaining');
         return { ok: !!d.id, msg: `✓ Unauthenticated · rate limit remaining: ${remaining ?? '?'}` };
+      }
+    },
+
+    {
+      id: 'gitlab_public',
+      label: 'GitLab Projects API',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://gitlab.com/api/v4/projects?search=javascript&per_page=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.length > 0, msg: d.length ? `✓ ${d[0].path_with_namespace}` : 'No projects' };
       }
     },
 
@@ -232,6 +300,19 @@
     },
 
     {
+      id: 'caniuse_raw',
+      label: 'Can I Use data',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://raw.githubusercontent.com/Fyrd/caniuse/main/data.json');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.data?.fetch, msg: d.data?.fetch ? '✓ Browser support data loaded' : 'No fetch support data' };
+      }
+    },
+
+    {
       id: 'hacknews',
       label: 'Hacker News',
       group: 'Free',
@@ -245,6 +326,19 @@
     },
 
     {
+      id: 'lobsters',
+      label: 'Tech News backup (Lobsters)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://lobste.rs/hottest.json');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.length > 0, msg: d.length ? `✓ ${d.length} tech stories` : 'No stories' };
+      }
+    },
+
+    {
       id: 'thecolorapi',
       label: 'The Color API',
       group: 'Free',
@@ -254,6 +348,19 @@
         if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
         const d = await res.json();
         return { ok: !!d.name?.value, msg: `✓ #00e5ff = "${d.name.value}"` };
+      }
+    },
+
+    {
+      id: 'colorpizza',
+      label: 'Color names backup (Color.pizza)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.color.pizza/v1/00e5ff');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.colors?.[0]?.name, msg: `✓ #00e5ff = "${d.colors[0].name}"` };
       }
     },
 
@@ -276,6 +383,19 @@
     },
 
     {
+      id: 'ipwhois',
+      label: 'IP Geolocation backup (ipwho.is)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://ipwho.is/');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.success !== false && !!d.ip, msg: `✓ IP backup: ${d.ip}` };
+      }
+    },
+
+    {
       id: 'mymemory',
       label: 'MyMemory Translate',
       group: 'Free',
@@ -286,6 +406,19 @@
         const d = await res.json();
         const out = d.responseData?.translatedText;
         return { ok: !!out, msg: `✓ "Hello world" → "${out}"` };
+      }
+    },
+
+    {
+      id: 'lingva',
+      label: 'Translate backup (Lingva)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://lingva.ml/api/v1/en/es/Hello%20world');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.translation, msg: `✓ Backup translation: "${d.translation}"` };
       }
     },
 
@@ -303,6 +436,20 @@
     },
 
     {
+      id: 'worldbank',
+      label: 'Country data backup (World Bank)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.worldbank.org/v2/country/DE?format=json');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        const country = d?.[1]?.[0];
+        return { ok: !!country?.name, msg: country?.name ? `✓ ${country.name}` : 'No country data' };
+      }
+    },
+
+    {
       id: 'openexchange',
       label: 'Exchange Rates (open.er-api)',
       group: 'Free',
@@ -315,6 +462,19 @@
           ok: d.result === 'success',
           msg: d.result === 'success' ? `✓ USD → INR: ${d.rates?.INR?.toFixed(2)}` : d['error-type'] || 'Unknown error'
         };
+      }
+    },
+
+    {
+      id: 'frankfurter',
+      label: 'Exchange Rates backup (Frankfurter)',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=INR');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.rates?.INR, msg: d.rates?.INR ? `✓ USD → INR: ${d.rates.INR.toFixed(2)}` : 'No INR rate' };
       }
     },
 
@@ -345,6 +505,19 @@
         const text = await res.text();
         const ok = text.includes('<entry>');
         return { ok, msg: ok ? '✓ arXiv returned results' : 'No entries found' };
+      }
+    },
+
+    {
+      id: 'openalex',
+      label: 'OpenAlex Papers',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.openalex.org/works?search=attention&per-page=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.results?.length > 0, msg: d.results?.length ? `✓ ${d.results[0].display_name.substring(0, 50)}...` : 'No papers' };
       }
     },
 
@@ -738,9 +911,21 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
+  function showPanel() {
+    buildPanel();
+    const panel = document.getElementById(PANEL_ID);
+    if (panel) {
+      panel.classList.remove('collapsed');
+      panel.style.opacity = '1';
+      panel.style.transform = 'translateY(0)';
+      const toggle = document.getElementById('cm_atp_toggle_txt');
+      if (toggle) toggle.textContent = '▾ collapse';
+    }
+  }
+
   // ── 6. PUBLIC API ────────────────────────────────────────
 
-  window._cmATP = { runAll, runSingle, updateKey, injectAndClose, injectKeys };
+  window._cmATP = { runAll, runSingle, updateKey, injectAndClose, injectKeys, showPanel };
 
   // ── 7. INIT ──────────────────────────────────────────────
 

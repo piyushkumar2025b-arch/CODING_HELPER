@@ -72,6 +72,7 @@ async function translateText() {
   out.style.color = 'var(--muted)';
   try {
     const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`);
+    if (!res.ok) throw new Error(`MyMemory HTTP ${res.status}`);
     const data = await res.json();
     if (data.responseStatus === 200) {
       out.textContent = data.responseData.translatedText;
@@ -79,12 +80,21 @@ async function translateText() {
       const quality = data.responseData.match ? Math.round(data.responseData.match * 100) : '?';
       meta.textContent = `Confidence: ${quality}% · Powered by MyMemory API`;
     } else {
-      out.textContent = '❌ Translation failed. Try again.';
-      out.style.color = 'var(--danger)';
+      throw new Error(data.responseDetails || 'MyMemory failed');
     }
   } catch(e) {
-    out.textContent = '❌ Network error. Check connection.';
-    out.style.color = 'var(--danger)';
+    try {
+      const backup = await fetch(`https://lingva.ml/api/v1/${from}/${to}/${encodeURIComponent(text)}`);
+      if (!backup.ok) throw new Error(`Lingva HTTP ${backup.status}`);
+      const data = await backup.json();
+      if (!data.translation) throw new Error('No backup translation');
+      out.textContent = data.translation;
+      out.style.color = 'var(--text)';
+      meta.textContent = 'Powered by Lingva Translate backup API';
+    } catch(e2) {
+      out.textContent = '❌ Translation APIs unavailable. Try again later.';
+      out.style.color = 'var(--danger)';
+    }
   }
 }
 
@@ -138,11 +148,24 @@ async function fetchWeather() {
   out.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px">🔍 Searching...</div>';
   try {
     const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+    if (!geoRes.ok) throw new Error(`Open-Meteo geocoding HTTP ${geoRes.status}`);
     const geo = await geoRes.json();
-    if (!geo.results?.length) { out.innerHTML = '<div style="color:var(--danger);text-align:center;padding:20px">❌ City not found. Try another name.</div>'; return; }
+    if (!geo.results?.length) throw new Error('City not found');
     const loc = geo.results[0];
     await renderWeather(loc.latitude, loc.longitude, `${loc.name}, ${loc.country}`);
-  } catch(e) { out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ ${e.message}</div>`; }
+  } catch(e) {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
+      const places = await res.json();
+      if (!places.length) throw new Error('City not found');
+      await renderWeather(Number(places[0].lat), Number(places[0].lon), places[0].display_name.split(',').slice(0, 2).join(', '));
+    } catch(e2) {
+      out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ City not found by free geocoding APIs.</div>`;
+    }
+  }
 }
 
 async function fetchMyLocation() {
@@ -159,6 +182,7 @@ async function renderWeather(lat, lon, label) {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weathercode,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`;
     const res = await fetch(url);
+    if (!res.ok) throw new Error(`Open-Meteo HTTP ${res.status}`);
     const d = await res.json();
     const cur = d.current;
     const daily = d.daily;
@@ -190,7 +214,41 @@ async function renderWeather(lat, lon, label) {
         <div class="weather-forecast">${forecastHTML}</div>
       </div>
     </div>`;
-  } catch(e) { out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ Weather fetch failed: ${e.message}</div>`; }
+  } catch(e) {
+    try {
+      const res = await fetch(`https://wttr.in/${lat},${lon}?format=j1`);
+      if (!res.ok) throw new Error(`wttr.in HTTP ${res.status}`);
+      const d = await res.json();
+      const cur = d.current_condition?.[0] || {};
+      const days = d.weather || [];
+      const forecastHTML = days.slice(0, 3).map((day, i) => `<div class="forecast-day">
+        <div class="forecast-day-name">${i === 0 ? 'Today' : new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
+        <div class="forecast-day-icon">🌤️</div>
+        <div class="forecast-day-temp">${day.maxtempC}° / ${day.mintempC}°</div>
+      </div>`).join('');
+      out.innerHTML = `<div class="weather-card">
+        <div class="weather-main">
+          <div class="weather-icon">🌤️</div>
+          <div>
+            <div class="weather-temp">${cur.temp_C || '?'}°C</div>
+            <div class="weather-city">${label}</div>
+            <div class="weather-desc">${cur.weatherDesc?.[0]?.value || 'Weather'} · Feels like ${cur.FeelsLikeC || '?'}°C</div>
+          </div>
+        </div>
+        <div class="weather-grid">
+          <div class="weather-stat"><div class="weather-stat-label">Humidity</div><div class="weather-stat-val">${cur.humidity || '?'}%</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">Wind</div><div class="weather-stat-val">${cur.windspeedKmph || '?'} km/h</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">Visibility</div><div class="weather-stat-val">${cur.visibility || '?'} km</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">Provider</div><div class="weather-stat-val" style="font-size:11px;">wttr.in backup</div></div>
+        </div>
+        <div style="margin-top:12px"><div class="input-label" style="margin-bottom:7px">Forecast</div>
+          <div class="weather-forecast">${forecastHTML}</div>
+        </div>
+      </div>`;
+    } catch(e2) {
+      out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ Weather APIs unavailable: ${e.message}</div>`;
+    }
+  }
 }
 
 // ============================================================
@@ -209,6 +267,7 @@ async function loadNews() {
   out.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px;">📰 Loading stories...</div>';
   try {
     const res = await fetch(`https://hacker-news.firebaseio.com/v0/${newsType}stories.json`);
+    if (!res.ok) throw new Error(`Hacker News HTTP ${res.status}`);
     const ids = await res.json();
     const top20 = ids.slice(0,20);
     const stories = await Promise.all(top20.map(id =>
@@ -229,6 +288,26 @@ async function loadNews() {
         </div>
       </div>`;
     }).join('');
-  } catch(e) { out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ ${e.message}</div>`; }
+  } catch(e) {
+    try {
+      const res = await fetch('https://lobste.rs/hottest.json');
+      if (!res.ok) throw new Error(`Lobsters HTTP ${res.status}`);
+      const stories = await res.json();
+      out.innerHTML = stories.slice(0, 20).map(s => {
+        const domain = s.url ? (() => { try { return new URL(s.url).hostname.replace('www.',''); } catch{ return ''; } })() : 'lobste.rs';
+        return `<div class="news-card">
+          <div class="news-card-title"><a href="${s.url || s.comments_url}" target="_blank">${s.title}</a></div>
+          <div class="news-card-meta">
+            <span class="news-score">▲ ${s.score||0}</span>
+            <span class="news-meta-item">💬 ${s.comment_count||0} comments</span>
+            <span class="news-meta-item">🌐 ${domain}</span>
+            <span class="news-meta-item">Backup: Lobsters</span>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e2) {
+      out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ News APIs unavailable.</div>`;
+    }
+  }
 }
 

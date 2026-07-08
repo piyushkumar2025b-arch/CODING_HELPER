@@ -74,6 +74,63 @@ async function callGemini(systemPrompt, userPrompt, idx = 0) {
   }
 }
 
+function localAIResponse(prompts) {
+  const lang = LANG_LABELS[currentLang] || currentLang;
+  const editorCode = document.getElementById('codeInput').value.trim() || document.getElementById('codeEditor').value.trim();
+  const question = document.getElementById('questionInput').value.trim();
+  const hasCode = editorCode.length > 0;
+  const mode = currentMode;
+  const heading = {
+    solve: 'Local problem breakdown',
+    debug: 'Local debugging checklist',
+    explain: 'Local code explanation',
+    optimize: 'Local optimization review',
+    generate: 'Local implementation outline',
+    complexity: 'Local complexity estimate',
+    unittest: 'Local test plan',
+    review: 'Local code review'
+  }[mode] || 'Local fallback';
+
+  const codeBlock = hasCode ? `\n\n\`\`\`${currentLang === 'html' ? 'html' : currentLang}\n${editorCode}\n\`\`\`` : '';
+  return `## ${heading}
+
+Gemini is not connected, so CodeMind is using its built-in no-key fallback. This keeps the workflow moving, but for full AI answers add a Gemini key later.
+
+**Language:** ${lang}
+
+**What I can infer**
+- ${question ? `Problem/request: ${question.slice(0, 600)}` : 'No separate problem statement was entered.'}
+- ${hasCode ? 'Code was provided, so start by checking inputs, edge cases, output format, and error handling.' : 'No code was provided yet, so begin with a small working version before optimizing.'}
+
+**Recommended next steps**
+1. Define the expected input and output clearly.
+2. Write the simplest correct approach first.
+3. Test empty, single-item, duplicate, large, and invalid inputs.
+4. Check time complexity before adding extra data structures.
+5. Use the editor Run button for JavaScript/HTML, or the free runner/Judge0 fallback for other languages.
+
+${mode === 'debug' || mode === 'review' ? `**Bug checklist**
+- Look for undefined/null values before property access.
+- Confirm loop bounds and indexes.
+- Verify async calls are awaited and errors are caught.
+- Check type conversions around numbers, strings, and arrays.
+- Remove hardcoded secrets or paid API assumptions.
+` : ''}
+${mode === 'unittest' ? `**Test cases to add**
+- Happy path with typical input.
+- Boundary input.
+- Empty or missing input.
+- Invalid input.
+- Large input for performance.
+` : ''}
+${mode === 'complexity' ? `**Complexity estimate**
+- One straight loop is usually O(n).
+- Nested loops over the same input are usually O(n^2).
+- Hash maps/sets often trade O(n) space for faster lookups.
+` : ''}
+${codeBlock}`;
+}
+
 // ============================================================
 // PROMPT BUILDER
 // ============================================================
@@ -208,7 +265,6 @@ function getTag() {
 // MAIN ASK AI
 // ============================================================
 async function askAI() {
-  if (!apiKey) { openModal('apiModal'); return; }
   if (isLoading) return;
   const prompts = buildPrompt();
   if (!prompts) { alert('Please enter a problem or code first!'); return; }
@@ -223,7 +279,10 @@ async function askAI() {
   panel.innerHTML = `<div class="thinking-anim"><span class="thinking-dots"><span></span><span></span><span></span></span> CodeMind is analyzing your problem...</div>`;
 
   try {
-    const { text, model } = await callGemini(prompts.system, prompts.user);
+    const response = apiKey
+      ? await callGemini(prompts.system, prompts.user)
+      : { text: localAIResponse(prompts), model: 'local fallback' };
+    const { text, model } = response;
     const { time, space } = extractComplexity(text);
     extractCodeBlocks(text);
 
@@ -247,11 +306,15 @@ async function askAI() {
     }
   } catch(e) {
     const isKeyErr = e.message.toLowerCase().includes('key') || e.message.includes('401');
+    const fallback = localAIResponse(prompts);
+    extractCodeBlocks(fallback);
     panel.innerHTML = `<div class="ai-msg">
       <div class="ai-content">
         <p style="color:var(--danger)">❌ ${e.message}</p>
         ${isKeyErr ? `<p style="color:var(--warn);margin-top:6px">👉 Click the <strong>Gemini Connected / No API Key</strong> badge in the header to update your key.</p>` : ''}
-        <p style="color:var(--muted);margin-top:6px;font-size:12px">Get a free Gemini API key at <strong>aistudio.google.com</strong></p>
+        <p style="color:var(--muted);margin-top:6px;font-size:12px">Showing the built-in fallback below. You can add a Gemini key later for deeper answers.</p>
+        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0"/>
+        ${renderMarkdown(fallback)}
       </div>
     </div>`;
   } finally {

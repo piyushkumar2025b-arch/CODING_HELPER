@@ -313,10 +313,18 @@ async function fetchMyIP() {
   out.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px">📍 Getting your IP...</div>';
   try {
     const res = await fetch('https://ipapi.co/json/');
+    if (!res.ok) throw new Error(`ipapi HTTP ${res.status}`);
     const d = await res.json();
     renderIPInfo(out, d, null);
   } catch(e) {
-    out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ ${e.message}</div>`;
+    try {
+      const res = await fetch('https://ipwho.is/');
+      if (!res.ok) throw new Error(`ipwho.is HTTP ${res.status}`);
+      const d = await res.json();
+      renderIPInfo(out, normalizeIpWhoIs(d), null);
+    } catch(e2) {
+      out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ Free IP APIs unavailable.</div>`;
+    }
   }
 }
 
@@ -334,8 +342,16 @@ async function lookupIP() {
     // IP geolocation
     const endpoint = isDomain ? `https://ipapi.co/${encodeURIComponent(input)}/json/` : `https://ipapi.co/${encodeURIComponent(input)}/json/`;
     const ipRes = await fetch(endpoint);
+    if (!ipRes.ok) throw new Error(`ipapi HTTP ${ipRes.status}`);
     ipData = await ipRes.json();
-  } catch(e) {}
+  } catch(e) {
+    try {
+      const endpoint = isDomain ? `https://ipwho.is/${encodeURIComponent(input)}` : `https://ipwho.is/${encodeURIComponent(input)}`;
+      const ipRes = await fetch(endpoint);
+      if (!ipRes.ok) throw new Error(`ipwho.is HTTP ${ipRes.status}`);
+      ipData = normalizeIpWhoIs(await ipRes.json());
+    } catch(_) {}
+  }
 
   if (isDomain) {
     try {
@@ -346,6 +362,27 @@ async function lookupIP() {
   }
 
   renderIPInfo(out, ipData, dnsData, input);
+}
+
+function normalizeIpWhoIs(d) {
+  if (!d || d.success === false) return { error: true, reason: d?.message || 'Lookup failed' };
+  return {
+    ip: d.ip,
+    city: d.city,
+    region: d.region,
+    country_name: d.country,
+    country_code: d.country_code,
+    continent_code: d.continent_code,
+    postal: d.postal,
+    latitude: d.latitude,
+    longitude: d.longitude,
+    timezone: d.timezone?.id,
+    org: d.connection?.org || d.connection?.isp,
+    asn: d.connection?.asn ? `AS${d.connection.asn}` : '',
+    country_calling_code: d.calling_code ? `+${d.calling_code}` : '',
+    currency: d.currency?.code,
+    languages: ''
+  };
 }
 
 function renderIPInfo(out, d, dnsData, originalInput) {
@@ -458,12 +495,18 @@ ${swatches.map((c,i) => `  --color-${i+1}: ${c.hex.value};`).join('\n')}
         <a href="https://www.thecolorapi.com" target="_blank" style="font-size:11px;color:var(--muted);text-decoration:none;">Powered by The Color API — free, no key</a>
       </div>`;
   } catch(e) {
-    // Fallback: generate palette locally
-    out.innerHTML = generateLocalPalette(hex);
+    try {
+      const nameRes = await fetch(`https://api.color.pizza/v1/${hex}`);
+      if (!nameRes.ok) throw new Error(`Color.pizza HTTP ${nameRes.status}`);
+      const nameData = await nameRes.json();
+      out.innerHTML = generateLocalPalette(hex, nameData.colors?.[0]?.name || 'Custom Color', 'Color.pizza backup + local palette');
+    } catch(e2) {
+      out.innerHTML = generateLocalPalette(hex);
+    }
   }
 }
 
-function generateLocalPalette(hex) {
+function generateLocalPalette(hex, colorName = 'Local Color', sourceLabel = 'Local fallback') {
   // Parse hex to HSL and generate palette client-side as fallback
   const r = parseInt(hex.slice(0,2),16)/255, g=parseInt(hex.slice(2,4),16)/255, b=parseInt(hex.slice(4,6),16)/255;
   const max=Math.max(r,g,b), min=Math.min(r,g,b), delta=max-min;
@@ -479,7 +522,7 @@ function generateLocalPalette(hex) {
     </div>`;
   });
   return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
-    <div style="font-size:12px;color:var(--muted);">⚠️ Generated locally (API unavailable). Showing lightness variants:</div>
+    <div style="font-size:12px;color:var(--muted);">⚠️ ${sourceLabel}. ${colorName}: showing generated variants.</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;">${shades.join('')}</div>
     <code style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent3);">Base: HSL(${h}, ${s}%, ${l}%)</code>
   </div>`;
@@ -495,7 +538,7 @@ async function fetchPyPI() {
   out.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px;">🐍 Fetching PyPI data...</div>';
   try {
     const res = await fetch(`https://pypi.org/pypi/${encodeURIComponent(name)}/json`);
-    if (!res.ok) { out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ Package "${name}" not found on PyPI.</div>`; return; }
+    if (!res.ok) throw new Error(`PyPI HTTP ${res.status}`);
     const d = await res.json();
     const info = d.info;
     const releases = Object.keys(d.releases||{}).filter(v => d.releases[v]?.length > 0);
@@ -546,7 +589,20 @@ async function fetchPyPI() {
         </div>
       </div>`;
   } catch(e) {
-    out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ Error: ${e.message}</div>`;
+    try {
+      const res = await fetch(`https://libraries.io/api/search?q=${encodeURIComponent(name)}&platforms=PyPI&per_page=5`);
+      if (!res.ok) throw new Error(`Libraries.io HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data.length) throw new Error('No package found');
+      out.innerHTML = data.map(p => `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;">
+        <div style="font-size:15px;font-weight:900;color:#fbbf24;font-family:'JetBrains Mono',monospace;">${p.name}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">${p.description || 'No description'}</div>
+        <div style="font-size:11px;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-top:6px;">Libraries.io backup · ${p.latest_release_number || 'version unknown'}</div>
+        <a href="${p.repository_url || p.homepage || `https://pypi.org/project/${encodeURIComponent(p.name)}/`}" target="_blank" style="color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">Open package →</a>
+      </div>`).join('');
+    } catch(e2) {
+      out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ PyPI and backup package APIs unavailable.</div>`;
+    }
   }
 }
 
@@ -647,7 +703,20 @@ async function fetchHuggingFace() {
       </div>`;
     }).join('');
   } catch(e) {
-    out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ ${e.message}</div>`;
+    try {
+      const q = query || task || 'transformers';
+      const res = await fetch(`https://paperswithcode.com/api/v1/search/?q=${encodeURIComponent(q)}`);
+      if (!res.ok) throw new Error(`Papers With Code HTTP ${res.status}`);
+      const data = await res.json();
+      const results = data.results || [];
+      if (!results.length) throw new Error('No backup results');
+      out.innerHTML = results.slice(0, 12).map(m => `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;">
+        <a href="${m.url || '#'}" target="_blank" style="font-size:13px;font-weight:800;color:var(--accent);text-decoration:none;font-family:'JetBrains Mono',monospace;word-break:break-all;">${m.name || m.title || 'AI resource'}</a>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">Backup: Papers With Code search</div>
+      </div>`).join('');
+    } catch(e2) {
+      out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ Model APIs unavailable.</div>`;
+    }
   }
 }
 
