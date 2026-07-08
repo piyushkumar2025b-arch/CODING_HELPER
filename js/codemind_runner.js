@@ -1,6 +1,32 @@
 ﻿// ============================================================
 // RUN CODE — NATIVE ENGINE
 // ============================================================
+let pyodideInstance = null;
+let pyodideLoading = false;
+
+async function initPyodide() {
+  if (pyodideInstance) return pyodideInstance;
+  if (pyodideLoading) {
+    // Wait for existing init
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (pyodideInstance) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 100);
+    });
+    return pyodideInstance;
+  }
+  pyodideLoading = true;
+  try {
+    pyodideInstance = await loadPyodide();
+    return pyodideInstance;
+  } finally {
+    pyodideLoading = false;
+  }
+}
+
 function toBase64(str) {
   const bytes = new TextEncoder().encode(str);
   let binary = '';
@@ -23,6 +49,8 @@ async function runCode() {
       setOutput('✅ HTML rendered in Preview →', 'ok', performance.now() - t0);
     } else if (currentLang === 'javascript') {
       runJavaScript(code, t0);
+    } else if (currentLang === 'python') {
+      await runPython(code, t0);
     } else {
       // First try free runners (Piston), then keyed (Judge0)
       const usedPiston = await runViaPiston(code, t0);
@@ -38,6 +66,43 @@ async function runCode() {
     setOutput('❌ ' + e.message, 'err');
   } finally {
     btn.disabled = false; btn.textContent = '▶ Run';
+  }
+}
+
+async function runPython(code, t0) {
+  setOutput('⏳ Loading Python runtime (first run may take a few seconds)...', 'loading');
+  try {
+    const pyodide = await initPyodide();
+    const logs = [];
+    const errors = [];
+    // Capture print statements
+    pyodide.runPython(`
+import sys
+from io import StringIO
+old_stdout = sys.stdout
+sys.stdout = captured_output = StringIO()
+old_stderr = sys.stderr
+sys.stderr = captured_err = StringIO()
+`);
+    try {
+      await pyodide.runPythonAsync(code);
+    } finally {
+      // Get output
+      const stdout = pyodide.runPython("captured_output.getvalue()");
+      const stderr = pyodide.runPython("captured_err.getvalue()");
+      // Reset stdout/stderr
+      pyodide.runPython(`
+sys.stdout = old_stdout
+sys.stderr = old_stderr
+`);
+      const elapsed = performance.now() - t0;
+      const output = [stdout, stderr].filter(Boolean).join('\n').trim() || '(no output)';
+      const ok = !stderr;
+      setOutput(output, ok ? 'ok' : 'err', elapsed, ok ? 'Pyodide OK' : 'Error');
+    }
+  } catch (e) {
+    const elapsed = performance.now() - t0;
+    setOutput('❌ Python Error:\n' + e.message, 'err', elapsed);
   }
 }
 
