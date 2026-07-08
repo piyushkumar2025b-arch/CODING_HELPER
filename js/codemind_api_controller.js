@@ -230,15 +230,15 @@
     },
 
     {
-      id: 'librariesio',
-      label: 'Package metadata backup (Libraries.io)',
+      id: 'piwheels',
+      label: 'PyPI backup (piwheels)',
       group: 'Free',
       needsKey: false,
       async test() {
-        const res = await fetch('https://libraries.io/api/search?q=numpy&per_page=1');
+        const res = await fetch('https://www.piwheels.org/project/numpy/json');
         if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
         const d = await res.json();
-        return { ok: Array.isArray(d) && d.length > 0, msg: d[0] ? `✓ ${d[0].name}` : 'No package metadata' };
+        return { ok: !!d.package, msg: d.package ? `✓ ${d.package} piwheels metadata` : 'No package metadata' };
       }
     },
 

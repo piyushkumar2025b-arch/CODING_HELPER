@@ -590,16 +590,17 @@ async function fetchPyPI() {
       </div>`;
   } catch(e) {
     try {
-      const res = await fetch(`https://libraries.io/api/search?q=${encodeURIComponent(name)}&platforms=PyPI&per_page=5`);
-      if (!res.ok) throw new Error(`Libraries.io HTTP ${res.status}`);
+      const res = await fetch(`https://www.piwheels.org/project/${encodeURIComponent(name)}/json`);
+      if (!res.ok) throw new Error(`piwheels HTTP ${res.status}`);
       const data = await res.json();
-      if (!data.length) throw new Error('No package found');
-      out.innerHTML = data.map(p => `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;">
-        <div style="font-size:15px;font-weight:900;color:#fbbf24;font-family:'JetBrains Mono',monospace;">${p.name}</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6;">${p.description || 'No description'}</div>
-        <div style="font-size:11px;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-top:6px;">Libraries.io backup · ${p.latest_release_number || 'version unknown'}</div>
-        <a href="${p.repository_url || p.homepage || `https://pypi.org/project/${encodeURIComponent(p.name)}/`}" target="_blank" style="color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">Open package →</a>
-      </div>`).join('');
+      const versions = Object.keys(data.releases || {});
+      const latest = versions[versions.length - 1] || 'unknown';
+      out.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;">
+        <div style="font-size:15px;font-weight:900;color:#fbbf24;font-family:'JetBrains Mono',monospace;">${data.package || name}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Python wheel metadata from piwheels backup.</div>
+        <div style="font-size:11px;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-top:6px;">piwheels backup · latest seen: ${latest} · releases: ${versions.length}</div>
+        <a href="https://www.piwheels.org/project/${encodeURIComponent(data.package || name)}/" target="_blank" style="color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">Open package →</a>
+      </div>`;
     } catch(e2) {
       out.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ PyPI and backup package APIs unavailable.</div>`;
     }
