@@ -768,6 +768,33 @@
       font-size: 10px;
       line-height: 1.55;
     }
+    .cm_atp_keys_grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin: 0 0 12px;
+    }
+    .cm_atp_keys_title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #93e9ff;
+      margin-bottom: 6px;
+    }
+    .cm_atp_key_card {
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,229,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+    }
+    .cm_atp_key_card label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #e8e8f0;
+      margin-bottom: 6px;
+    }
     .cm_atp_group_label {
       font-size: 9px; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: #6b6b80;
@@ -851,6 +878,10 @@
         <div class="cm_atp_banner">
           Paste your keys once and CodeMind will keep them locally for later. When one provider fails, the app can try the saved fallback keys and keep features moving.
         </div>
+        <div class="cm_atp_keys_title">Add API Keys</div>
+        <div class="cm_atp_keys_grid">
+          ${buildKeyInputsOverview()}
+        </div>
         <div id="cm_atp_keyed_section">
           <div class="cm_atp_group_label">🔑 Keys Required</div>
           ${buildKeyedSection()}
@@ -897,15 +928,26 @@
             ${saved ? 'Key saved — click Run to verify' : 'No key set'}
           </span>
         </div>
-        <div class="cm_atp_key_row">
-          <input type="password" id="cm_atp_input_${t.id}"
-            placeholder="${t.keyPlaceholder}"
-            value="${saved}"
-            oninput="window._cmATP.updateKey('${t.keyRef}', this.value)"
-          />
-          <button class="cm_atp_key_btn" onclick="window._cmATP.runSingle('${t.id}')">Test</button>
+      `;
+    }).join('');
+  }
+
+  function buildKeyInputsOverview() {
+    return TESTS.filter(t => t.needsKey).map(t => {
+      const saved = getKey(t.keyRef);
+      return `
+        <div class="cm_atp_key_card">
+          <label for="cm_atp_input_${t.id}">${t.label}</label>
+          <div class="cm_atp_key_row" style="margin:0;padding:0;background:transparent;border:none;">
+            <input type="password" id="cm_atp_input_${t.id}"
+              placeholder="${t.keyPlaceholder}"
+              value="${saved}"
+              oninput="window._cmATP.updateKey('${t.keyRef}', this.value)"
+            />
+            <button class="cm_atp_key_btn" onclick="window._cmATP.runSingle('${t.id}')">Test</button>
+          </div>
+          <div class="cm_atp_hint" style="margin:6px 0 0 2px;">🔗 ${t.keyHint}</div>
         </div>
-        <div class="cm_atp_hint">🔗 ${t.keyHint}</div>
       `;
     }).join('');
   }
