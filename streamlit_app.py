@@ -28,8 +28,15 @@ st.markdown(
     .block-container {
         padding: 0 !important;
         max-width: 100% !important;
+        margin: 0 !important;
     }
-    iframe { border: none !important; }
+    iframe {
+        border: none !important;
+        height: 100vh !important;
+        min-height: 600px !important;
+        display: block !important;
+    }
+    .stApp { overflow: hidden; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -52,7 +59,7 @@ def _secret(name: str) -> str | None:
         return None
     try:
         value = st.secrets.get(name)
-    except (FileNotFoundError, KeyError, AttributeError):
+    except Exception:
         return None
     return value if value else None
 
@@ -94,9 +101,7 @@ def _inject_deploy_mode(html: str) -> str:
     script = (
         "<script>"
         "window.CODEMIND_STREAMLIT_MODE=true;"
-        f"window.CODEMIND_STREAMLIT_CLOUD_MODE={json.dumps(known_cloud)} || "
-        "(function(){try{var h=(window.parent&&window.parent.location&&window.parent.location.hostname)||location.hostname;"
-        "return !!h && !/^(localhost|127\\.0\\.0\\.1|::1)$/.test(h);}catch(e){return false;}})();"
+        f"window.CODEMIND_STREAMLIT_CLOUD_MODE={json.dumps(known_cloud)};"
         f"window.CODEMIND_LOCAL_DB_URL={json.dumps(LOCAL_DB_URL)};"
         "</script>"
     )
@@ -115,30 +120,43 @@ def _start_local_database_if_available() -> None:
         pass
 
 
+def _read_bundled_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8-sig").replace("\r\n", "\n").replace("\r", "\n")
+
+
 def _bundle_scripts(html: str) -> str:
-    pattern = re.compile(r'<script src="([^"]+\.js)"></script>')
+    pattern = re.compile(r'<script\s+src="([^"]+\.js)"[^>]*></script>')
 
     def replace(match: re.Match[str]) -> str:
         path = APP_DIR / match.group(1)
         if not path.exists():
             return match.group(0)
-        return f"<script>\n{path.read_text(encoding='utf-8')}\n</script>"
+        content = _read_bundled_text(path)
+        return f"<script>\n{content}\n</script>"
 
     return pattern.sub(replace, html)
 
 
 def _bundle_styles(html: str) -> str:
-    pattern = re.compile(r'<link rel="stylesheet" href="([^"]+\.css)"/>')
+    pattern = re.compile(r'<link rel="stylesheet" href="([^"]+\.css)"\s*/>')
 
     def replace(match: re.Match[str]) -> str:
         path = APP_DIR / match.group(1)
         if not path.exists():
             return match.group(0)
-        return f"<style>\n{path.read_text(encoding='utf-8')}\n</style>"
+        content = _read_bundled_text(path)
+        return f"<style>\n{content}\n</style>"
 
     return pattern.sub(replace, html)
 
 
 _start_local_database_if_available()
-html = _inject_secrets(_inject_deploy_mode(_bundle_scripts(_bundle_styles(_load_html()))))
-components.html(html, height=900, scrolling=True)
+
+if "bundled_html" not in st.session_state:
+    raw = _load_html()
+    raw = _bundle_styles(raw)
+    raw = _bundle_scripts(raw)
+    st.session_state["bundled_html"] = raw
+
+html = _inject_secrets(_inject_deploy_mode(st.session_state["bundled_html"]))
+components.html(html, height=1400, scrolling=False)

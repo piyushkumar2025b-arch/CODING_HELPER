@@ -42,6 +42,16 @@
     set: (k, v) => localStorage.setItem(KEY_STORE[k] || k, v),
   };
 
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  window.sleep = window.sleep || sleep;
+
+  function toBase64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary);
+  }
+
   /* Inject keys into whatever globals the app already exposes */
   function injectAppGlobals() {
     const g = Keys.get('gemini');
@@ -98,13 +108,17 @@
         key = key || Keys.get('gemini');
         if (!key) throw new Error('Gemini key missing');
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
-        const contents = [];
-        if (systemPrompt) contents.push({ role: 'user', parts: [{ text: systemPrompt }], /* acts as context */ });
-        contents.push({ role: 'user', parts: [{ text: userPrompt }] });
+        const body = {
+          ...(systemPrompt
+            ? { system_instruction: { parts: [{ text: systemPrompt }] } }
+            : {}),
+          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+          generationConfig: { maxOutputTokens: 2048 },
+        };
         const r = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents, generationConfig: { maxOutputTokens: 2048 } }),
+          body: JSON.stringify(body),
         });
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e?.error?.message || `HTTP ${r.status}`); }
         const d = await r.json();
@@ -190,7 +204,7 @@
         const hdrs = { 'Content-Type': 'application/json', 'X-RapidAPI-Key': key, 'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com' };
         const sub = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=false', {
           method: 'POST', headers: hdrs,
-          body: JSON.stringify({ language_id: languageId, source_code: btoa(unescape(encodeURIComponent(code))), stdin: btoa(stdin) }),
+          body: JSON.stringify({ language_id: languageId, source_code: toBase64(code), stdin: toBase64(stdin) }),
         });
         if (!sub.ok) throw new Error(`Submit HTTP ${sub.status}`);
         const { token } = await sub.json();
@@ -449,18 +463,26 @@
       label: 'Can I Use data',
       group: 'Dev',
       needsKey: false,
+      _cache: null,
 
       async ping() {
-        const r = await fetch('https://raw.githubusercontent.com/Fyrd/caniuse/main/data.json');
-        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
-        const d = await r.json();
-        return { ok: !!d.data?.fetch, msg: d.data?.fetch ? '✓ Browser support data loaded' : 'No fetch entry' };
+        const r = await fetch(
+          'https://raw.githubusercontent.com/Fyrd/caniuse/main/data.json',
+          { method: 'HEAD' }
+        );
+        return { ok: r.ok, msg: r.ok ? '✓ Caniuse data available' : `HTTP ${r.status}` };
       },
 
-      async call() {
-        const r = await fetch('https://raw.githubusercontent.com/Fyrd/caniuse/main/data.json');
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
+      async call({ feature } = {}) {
+        if (!this._cache) {
+          const r = await fetch('https://raw.githubusercontent.com/Fyrd/caniuse/main/data.json');
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          this._cache = await r.json();
+        }
+        if (feature && this._cache.data?.[feature]) {
+          return { feature, data: this._cache.data[feature] };
+        }
+        return this._cache;
       },
     },
 

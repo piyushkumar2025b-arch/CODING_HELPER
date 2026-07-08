@@ -212,7 +212,7 @@ function renderMarkdown(text) {
   text = text.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
   text = text.replace(/^#{1,3} (.+)$/gm, '<h3>$1</h3>');
   text = text.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
-  text = text.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  text = text.replace(/(<li>.*?<\/li>\n?)+/gs, match => `<ul>${match}</ul>`);
   text = text.replace(/\n\n/g, '</p><p>');
   return '<p>' + text + '</p>';
 }

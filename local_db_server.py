@@ -17,11 +17,17 @@ PORT = 8787
 
 _server: ThreadingHTTPServer | None = None
 _thread: threading.Thread | None = None
+_DB_INITIALISED = False
 
 
 def init_db() -> None:
+    """Idempotent: create the schema only once per process lifetime."""
+    global _DB_INITIALISED
+    if _DB_INITIALISED:
+        return
     DATA_DIR.mkdir(exist_ok=True)
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(DB_PATH, timeout=10.0, check_same_thread=False) as conn:
+        conn.execute("PRAGMA journal_mode=WAL")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS conversations (
@@ -42,12 +48,16 @@ def init_db() -> None:
             )
             """
         )
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_conversations_created_at ON conversations(created_at DESC)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_conversations_created_at "
+            "ON conversations(created_at DESC)"
+        )
+    _DB_INITIALISED = True
 
 
 def save_conversation(item: dict[str, Any]) -> None:
     init_db()
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(DB_PATH, timeout=10.0, check_same_thread=False) as conn:
         conn.execute(
             """
             INSERT OR REPLACE INTO conversations (
@@ -77,14 +87,16 @@ def save_conversation(item: dict[str, Any]) -> None:
 
 def list_conversations() -> list[dict[str, Any]]:
     init_db()
-    with sqlite3.connect(DB_PATH) as conn:
-        rows = conn.execute("SELECT payload_json FROM conversations ORDER BY created_at DESC").fetchall()
+    with sqlite3.connect(DB_PATH, timeout=10.0, check_same_thread=False) as conn:
+        rows = conn.execute(
+            "SELECT payload_json FROM conversations ORDER BY created_at DESC"
+        ).fetchall()
     return [json.loads(row[0]) for row in rows]
 
 
 def clear_conversations() -> None:
     init_db()
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(DB_PATH, timeout=10.0, check_same_thread=False) as conn:
         conn.execute("DELETE FROM conversations")
 
 
@@ -93,7 +105,12 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self.headers.get("Origin", "")
+        allowed_origins = {"http://127.0.0.1:8501", "http://localhost:8501"}
+        if origin in allowed_origins:
+            self.send_header("Access-Control-Allow-Origin", origin)
+        else:
+            self.send_header("Access-Control-Allow-Origin", "http://127.0.0.1:8501")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Content-Length", str(len(body)))

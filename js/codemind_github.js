@@ -50,13 +50,23 @@ async function saveAsGist() {
 
 async function loadMyGists() {
   if (!ghToken) return;
+  const list = document.getElementById('gistList');
   try {
     const res = await fetch('https://api.github.com/gists?per_page=10', {
       headers: { 'Authorization': `Bearer ${ghToken}`, 'Accept': 'application/vnd.github+json' }
     });
+    if (!res.ok) {
+      const reason = res.status === 401 ? 'Token expired or invalid.' :
+                     res.status === 403 ? 'Token lacks gist scope.' :
+                     `HTTP ${res.status}`;
+      list.innerHTML = `<div style="color:var(--danger);font-size:11px;padding:5px">❌ Could not load gists: ${reason}</div>`;
+      return;
+    }
     const gists = await res.json();
-    const list = document.getElementById('gistList');
-    if (!Array.isArray(gists) || gists.length === 0) { list.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:5px">No gists found.</div>'; return; }
+    if (!Array.isArray(gists) || gists.length === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:5px">No gists found.</div>';
+      return;
+    }
     list.innerHTML = gists.map(g => {
       const fname = Object.keys(g.files)[0];
       return `<div class="gist-item" onclick="loadGistById('${g.id}')">
@@ -64,7 +74,9 @@ async function loadMyGists() {
         <button class="gist-load-btn" onclick="event.stopPropagation();loadGistById('${g.id}')">Load</button>
       </div>`;
     }).join('');
-  } catch(e) { /* silent */ }
+  } catch(e) {
+    list.innerHTML = `<div style="color:var(--danger);font-size:11px;padding:5px">❌ Network error: ${e.message}</div>`;
+  }
 }
 
 async function loadGistFromUrl() {

@@ -1,6 +1,13 @@
 ﻿// ============================================================
 // RUN CODE — NATIVE ENGINE
 // ============================================================
+function toBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+
 async function runCode() {
   const code = document.getElementById('codeEditor').value.trim();
   if (!code) { setOutput('⚠️ No code to run!', 'warn'); return; }
@@ -37,12 +44,28 @@ function runJavaScript(code, t0) {
       warn: (...a) => logs.push('⚠️ ' + a.map(stringify).join(' ')),
       info: (...a) => logs.push('ℹ️ ' + a.map(stringify).join(' ')),
       table: (v) => logs.push(JSON.stringify(v, null, 2)),
+      dir: (v) => logs.push(JSON.stringify(v, null, 2)),
     },
     alert: (m) => logs.push('[alert] ' + m),
     prompt: (m) => { logs.push('[prompt] ' + m); return ''; },
+    confirm: (m) => { logs.push('[confirm] ' + m); return true; },
     JSON, Math, Date, Array, Object, Map, Set, Number, String, Boolean,
-    parseInt, parseFloat, isNaN, isFinite, encodeURIComponent, decodeURIComponent,
+    Symbol, RegExp, Error, TypeError, RangeError, SyntaxError, ReferenceError,
+    parseInt, parseFloat, isNaN, isFinite, NaN, Infinity, undefined,
+    encodeURIComponent, decodeURIComponent, encodeURI, decodeURI,
+    Promise,
+    queueMicrotask: (fn) => Promise.resolve().then(fn),
+    Uint8Array, Int8Array, Uint16Array, Int16Array, Uint32Array, Int32Array,
+    Float32Array, Float64Array, BigInt64Array, BigUint64Array, ArrayBuffer, DataView,
+    WeakMap, WeakSet, WeakRef,
+    URL, URLSearchParams,
+    TextEncoder, TextDecoder,
+    performance: { now: () => performance.now() },
+    crypto: { getRandomValues: (a) => crypto.getRandomValues(a) },
+    BigInt,
     setTimeout: () => {}, setInterval: () => {}, clearTimeout: () => {}, clearInterval: () => {},
+    structuredClone: (v) => JSON.parse(JSON.stringify(v)),
+    fetch: (...args) => fetch(...args),
   };
 
   try {
@@ -87,67 +110,77 @@ async function runViaJudge0(code, t0) {
 
   setOutput('⏳ Compiling & executing...', 'loading');
   const stdin = document.getElementById('stdinInput').value.replace(/\\n/g, '\n');
-
-  const submitRes = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=false', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
-      'X-RapidAPI-Key': judge0Key
-    },
-    body: JSON.stringify({
-      language_id: langId,
-      source_code: btoa(unescape(encodeURIComponent(code))),
-      stdin: btoa(unescape(encodeURIComponent(stdin)))
-    })
-  });
-
-  if (!submitRes.ok) {
-    const err = await submitRes.text();
-    throw new Error('Judge0 error: ' + err);
-  }
-  const { token } = await submitRes.json();
-
-  // Poll for result
-  let attempts = 0;
-  const poll = async () => {
-    attempts++;
-    const res = await fetch(`https://judge0-ce.p.rapidapi.com/submissions/${token}?base64_encoded=true`, {
-      headers: {
-        'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
-        'X-RapidAPI-Key': judge0Key
-      }
-    });
-    const data = await res.json();
-
-    if ((data.status?.id <= 2) && attempts < 15) {
-      setTimeout(poll, 900); return;
-    }
-
-    const elapsed = performance.now() - t0;
-    const decode = b64 => { try { return decodeURIComponent(escape(atob(b64))); } catch { return b64 || ''; } };
-    const stdout = decode(data.stdout);
-    const stderr = decode(data.stderr);
-    const compileOut = decode(data.compile_output);
-    const status = data.status?.description || 'Unknown';
-    const time = data.time ? data.time + 's' : null;
-    const mem = data.memory ? (data.memory / 1024).toFixed(1) + ' MB' : null;
-
-    if (stdout) {
-      setOutput(stdout, data.status?.id === 3 ? 'ok' : 'warn', elapsed, status, time, mem);
-    } else if (compileOut) {
-      setOutput('📦 Compile Error:\n' + compileOut, 'err', elapsed, status);
-    } else if (stderr) {
-      setOutput('❌ Runtime Error:\n' + stderr, 'err', elapsed, status);
-    } else {
-      setOutput('(no output)\nStatus: ' + status, 'ok', elapsed, status, time, mem);
-    }
+  const hdrs = {
+    'Content-Type': 'application/json',
+    'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
+    'X-RapidAPI-Key': judge0Key,
   };
-  poll();
+
+  let token;
+  try {
+    const submitRes = await fetch(
+      'https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=false',
+      {
+        method: 'POST',
+        headers: hdrs,
+        body: JSON.stringify({
+          language_id: langId,
+          source_code: toBase64(code),
+          stdin: toBase64(stdin),
+        }),
+      }
+    );
+    if (!submitRes.ok) {
+      const err = await submitRes.text();
+      throw new Error('Judge0 submit error: ' + err);
+    }
+    ({ token } = await submitRes.json());
+  } catch (e) {
+    setOutput('❌ ' + e.message, 'err');
+    return;
+  }
+
+  try {
+    for (let i = 0; i < 15; i++) {
+      await new Promise(r => setTimeout(r, 900));
+      const pollRes = await fetch(
+        `https://judge0-ce.p.rapidapi.com/submissions/${token}?base64_encoded=true`,
+        { headers: hdrs }
+      );
+      if (!pollRes.ok) throw new Error(`Poll HTTP ${pollRes.status}`);
+      const data = await pollRes.json();
+
+      if (data.status?.id <= 2) continue;
+
+      const elapsed = performance.now() - t0;
+      const decode = b64 => { try { return decodeURIComponent(escape(atob(b64))); } catch { return b64 || ''; } };
+      const stdout = decode(data.stdout);
+      const stderr = decode(data.stderr);
+      const compileOut = decode(data.compile_output);
+      const status = data.status?.description || 'Unknown';
+      const time = data.time ? data.time + 's' : null;
+      const mem = data.memory ? (data.memory / 1024).toFixed(1) + ' MB' : null;
+
+      if (stdout) {
+        setOutput(stdout, data.status?.id === 3 ? 'ok' : 'warn', elapsed, status, time, mem);
+      } else if (compileOut) {
+        setOutput('📦 Compile Error:\n' + compileOut, 'err', elapsed, status);
+      } else if (stderr) {
+        setOutput('❌ Runtime Error:\n' + stderr, 'err', elapsed, status);
+      } else {
+        setOutput('(no output)\nStatus: ' + status, 'ok', elapsed, status, time, mem);
+      }
+      return;
+    }
+    setOutput('⏳ Timed out after 15 attempts. Judge0 may be busy.', 'warn');
+  } catch (e) {
+    setOutput('❌ Poll error: ' + e.message, 'err');
+  }
 }
 
 async function runViaPiston(code, t0) {
-  const runtime = PISTON_RUNTIMES[currentLang];
+  const runtimes = await getPistonRuntimes();
+  const runtime = runtimes[currentLang];
   if (!runtime) return false;
 
   setOutput(`⏳ Running with free no-key runner (${runtime.language})...`, 'loading');

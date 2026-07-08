@@ -44,6 +44,37 @@ const PISTON_RUNTIMES = {
   dart:{ language:'dart', version:'2.19.6' }
 };
 
+let _pistonRuntimes = null;
+
+async function getPistonRuntimes() {
+  if (_pistonRuntimes) return _pistonRuntimes;
+  try {
+    const res = await fetch('https://emkc.org/api/v2/piston/runtimes');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const list = await res.json();
+    const byLang = {};
+    list.forEach(rt => {
+      const lang = rt.language.toLowerCase();
+      byLang[lang] = { language: rt.language, version: rt.version };
+    });
+    const LANG_MAP = {
+      python: 'python', typescript: 'typescript', java: 'java',
+      cpp: 'c++', c: 'c', csharp: 'csharp', go: 'go', rust: 'rust',
+      kotlin: 'kotlin', swift: 'swift', ruby: 'ruby', php: 'php',
+      scala: 'scala', r: 'r', dart: 'dart',
+    };
+    const mapped = {};
+    for (const [key, pistonLang] of Object.entries(LANG_MAP)) {
+      if (byLang[pistonLang]) mapped[key] = byLang[pistonLang];
+    }
+    _pistonRuntimes = mapped;
+  } catch (e) {
+    console.warn('[CM] Could not fetch Piston runtimes, using fallback:', e.message);
+    _pistonRuntimes = PISTON_RUNTIMES;
+  }
+  return _pistonRuntimes;
+}
+
 const LANG_LABELS = {
   javascript:'JavaScript', html:'HTML/CSS', python:'Python',
   typescript:'TypeScript', java:'Java', cpp:'C++', c:'C',
