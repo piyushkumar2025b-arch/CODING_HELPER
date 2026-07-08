@@ -8,7 +8,19 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"/>
 <link rel="stylesheet" href="css/codemind_neon_extra.css"/>
 <link rel="stylesheet" href="css/codemind_structure.css"/>
+<link rel="stylesheet" href="css/codemind_terminal.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/go/go.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/rust/rust.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/ruby/ruby.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/php/php.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/sql/sql.min.js"></script>
 <script src="https://unpkg.com/prettier@3.3.3/standalone.js"></script>
 <script src="https://unpkg.com/prettier@3.3.3/plugins/babel.js"></script>
 <script src="https://unpkg.com/prettier@3.3.3/plugins/html.js"></script>
@@ -790,6 +802,7 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.0
       <button class="mode-btn" onclick="setMode('complexity')" id="mode-complexity"><span class="icon">📊</span> Complexity</button>
       <button class="mode-btn" onclick="setMode('unittest')" id="mode-unittest"><span class="icon">🧪</span> Unit Tests</button>
       <button class="mode-btn" onclick="setMode('review')" id="mode-review"><span class="icon">🔍</span> Code Review</button>
+      <button class="mode-btn" onclick="switchTab('terminal')" id="mode-terminal"><span class="icon">⌨️</span> Code Terminal</button>
       <button class="mode-btn" onclick="switchTab('regex')" id="mode-regex"><span class="icon">🎯</span> Regex Tester</button>
       <button class="mode-btn" onclick="switchTab('diff')" id="mode-diff"><span class="icon">📑</span> Code Diff</button>
       <button class="mode-btn" onclick="switchTab('cheatsheet')" id="mode-cheatsheet"><span class="icon">📚</span> Cheatsheet</button>
@@ -864,6 +877,7 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.0
     <div class="tabs">
       <div class="tab active" onclick="switchTab('question')" id="tab-question">📝 Problem</div>
       <div class="tab" onclick="switchTab('code')" id="tab-code">💻 Editor</div>
+      <div class="tab" onclick="switchTab('terminal')" id="tab-terminal">⌨️ Terminal</div>
       <div class="tab" onclick="switchTab('response')" id="tab-response">🤖 AI Response</div>
       <div class="tab" onclick="switchTab('regex')" id="tab-regex">🎯 Regex</div>
       <div class="tab" onclick="switchTab('diff')" id="tab-diff">📑 Diff</div>
@@ -991,6 +1005,48 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.0
             <strong>CodeMind Ready</strong>
             Enter a problem in the Problem tab and click Ask CodeMind.<br/>
             Supports LeetCode · Codeforces · 16 languages · Run & Preview
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TERMINAL TAB -->
+    <div class="panel" id="panel-terminal">
+      <div class="terminal-panel" id="terminalPanel">
+        <div id="terminalContainer" class="terminal-container">
+          <!-- HEADER BAR -->
+          <div class="terminal-header">
+            <div class="terminal-header-label">🌍 Language</div>
+            <select id="terminalLangSelector" class="terminal-lang-selector"></select>
+            <div class="terminal-toolbar">
+              <button class="terminal-btn terminal-btn-run" onclick="runTerminalCode()" id="terminalRunBtn">▶ Run</button>
+              <button class="terminal-btn terminal-btn-clear" onclick="clearTerminal()" id="terminalClearBtn">🗑 Clear</button>
+              <button class="terminal-btn terminal-btn-fs" onclick="toggleTerminalFullscreen()" id="terminalFullscreenBtn">🔲 Fullscreen</button>
+            </div>
+          </div>
+
+          <!-- SPLIT LAYOUT: EDITOR (LEFT) | OUTPUT (RIGHT) -->
+          <div class="terminal-split">
+            <!-- LEFT: CODE EDITOR -->
+            <div class="terminal-editor-col">
+              <div class="terminal-editor-wrap">
+                <textarea id="terminalEditor"></textarea>
+              </div>
+              <div class="terminal-input-bar">
+                <label class="terminal-input-label">📥 Input (STDIN)</label>
+                <input type="text" id="terminalStdin" class="terminal-stdin-input" placeholder="Pass input to your program here..."/>
+              </div>
+            </div>
+
+            <!-- RIGHT: OUTPUT -->
+            <div class="terminal-output-col">
+              <div class="terminal-output-header">
+                <div class="terminal-output-label">📤 Output</div>
+              </div>
+              <div class="terminal-output-content" id="terminalOutput">
+                <div class="terminal-msg muted">Output will appear here...</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -6495,6 +6551,39 @@ exposeCodeMindGlobals();
 updateJ0Status();
 init();
 initExtras();
+
+// Initialize Terminal with CodeMirror
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const terminalEditor = document.getElementById('terminalEditor');
+    if (terminalEditor && typeof CodeMirror !== 'undefined') {
+      window.terminalEditor = CodeMirror.fromTextArea(terminalEditor, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'material-darker',
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        styleActiveLine: true,
+        highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false },
+        viewportMargin: Infinity
+      });
+      
+      // Load saved code
+      const saved = localStorage.getItem('cm_terminal_code');
+      if (saved) window.terminalEditor.setValue(saved);
+      
+      // Save on change
+      window.terminalEditor.on('change', () => {
+        const code = window.terminalEditor.getValue();
+        localStorage.setItem('cm_terminal_code', code);
+      });
+    }
+  }, 500);
+});
+
 </script>
 <script src="js/codemind_api_hub.js"></script>
 <script src="js/codemind_safety_handler.js"></script>
@@ -6502,5 +6591,6 @@ initExtras();
 <script src="js/codemind_api_controller.js"></script>
 <script src="js/codemind_api_e2e_handler.js"></script>
 <script src="js/codemind_site_handler.js"></script>
+<script src="js/codemind_terminal.js"></script>
 </body>
 </html>
