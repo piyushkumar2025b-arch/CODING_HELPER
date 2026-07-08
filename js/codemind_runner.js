@@ -24,9 +24,17 @@ async function runCode() {
     } else if (currentLang === 'javascript') {
       runJavaScript(code, t0);
     } else {
-      await runViaJudge0(code, t0);
+      // First try free runners (Piston), then keyed (Judge0)
+      const usedPiston = await runViaPiston(code, t0);
+      if (!usedPiston) {
+        if (judge0Key) {
+          await runViaJudge0(code, t0);
+        } else {
+          setOutput('⚠️ No free runner available right now. Add a Judge0 key for more options.', 'warn');
+        }
+      }
     }
-  } catch(e) {
+  } catch (e) {
     setOutput('❌ ' + e.message, 'err');
   } finally {
     btn.disabled = false; btn.textContent = '▶ Run';
@@ -97,18 +105,15 @@ function stringify(v) {
 async function runViaJudge0(code, t0) {
   const langId = J0_IDS[currentLang];
   if (!langId) {
-    setOutput(`⚠️ "${LANG_LABELS[currentLang]}" is not supported by Judge0 free tier.\n\nSupported: Python, Java, C++, C, C#, Go, Rust, Kotlin, Swift, Ruby, PHP, TypeScript, Scala, R, Dart`, 'warn');
+    setOutput(`⚠️ "${LANG_LABELS[currentLang]}" is not supported by Judge0.`, 'warn');
     return;
   }
   if (!judge0Key) {
-    const usedPiston = await runViaPiston(code, t0);
-    if (!usedPiston) {
-      setOutput(`⚠️ No free runner is available for ${LANG_LABELS[currentLang]} right now.\n\nFallbacks tried:\n1. Browser-native runner for JavaScript/HTML\n2. Piston public runner for compiled/interpreted languages\n\nOptional: add a Judge0 RapidAPI key from the "Judge0" badge for a more reliable hosted runner.`, 'warn');
-    }
+    setOutput('⚠️ No Judge0 key set.', 'warn');
     return;
   }
 
-  setOutput('⏳ Compiling & executing...', 'loading');
+  setOutput('⏳ Compiling & executing via Judge0...', 'loading');
   const stdin = document.getElementById('stdinInput').value.replace(/\\n/g, '\n');
   const hdrs = {
     'Content-Type': 'application/json',
