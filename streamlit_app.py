@@ -70,6 +70,13 @@ def _inject_secrets(html: str) -> str:
         "cm_gemini_key": _secret("GEMINI_API_KEY"),
         "cm_j0_key": _secret("JUDGE0_API_KEY"),
         "cm_gh_token": _secret("GITHUB_TOKEN"),
+        "cm_groq_key": _secret("GROQ_API_KEY"),
+        "cm_openrouter_key": _secret("OPENROUTER_API_KEY"),
+        "cm_mistral_key": _secret("MISTRAL_API_KEY"),
+        "cm_hf_key": _secret("HUGGINGFACE_API_KEY"),
+        "cm_cloudflare_key": _secret("CLOUDFLARE_API_TOKEN"),
+        "cm_cohere_key": _secret("COHERE_API_KEY"),
+        "cm_deepseek_key": _secret("DEEPSEEK_API_KEY"),
     }
     entries = {k: v for k, v in keys.items() if v}
     if not entries:
