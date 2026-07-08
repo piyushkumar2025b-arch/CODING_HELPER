@@ -1803,6 +1803,16 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.0
             <button class="tbtn" onclick="document.getElementById('caniuseInput').value='service worker';searchCaniuse()">service worker</button>
             <button class="tbtn" onclick="document.getElementById('caniuseInput').value='webassembly';searchCaniuse()">webassembly</button>
           </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;">CSS picks:</span>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='css nesting';searchCaniuse()">nesting</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='css container queries';searchCaniuse()">container queries</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='css subgrid';searchCaniuse()">subgrid</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='css has';searchCaniuse()">:has()</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='css cascade layers';searchCaniuse()">@layer</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='css backdrop-filter';searchCaniuse()">backdrop-filter</button>
+            <button class="tbtn" onclick="document.getElementById('caniuseInput').value='scroll snap';searchCaniuse()">scroll snap</button>
+          </div>
         </div>
         <div id="caniuseOutput" style="display:flex;flex-direction:column;gap:10px;">
           <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">🌐 Search a CSS/JS/HTML feature to check browser support</div>

@@ -59,6 +59,15 @@ async function searchCaniuse(query, box) {
     { name:'CSS Subgrid', slug:'css-subgrid', support:'85%', url:'https://caniuse.com/css-subgrid' },
     { name:'View Transitions API', slug:'view-transitions', support:'75%', url:'https://caniuse.com/view-transitions' },
     { name:'CSS Nesting', slug:'css-nesting', support:'87%', url:'https://caniuse.com/css-nesting' },
+    { name:'CSS Cascade Layers', slug:'css-cascade-layers', support:'90%', url:'https://caniuse.com/css-cascade-layers' },
+    { name:'CSS Scroll Snap', slug:'css-snappoints', support:'96%', url:'https://caniuse.com/css-snappoints' },
+    { name:'CSS backdrop-filter', slug:'css-backdrop-filter', support:'91%', url:'https://caniuse.com/css-backdrop-filter' },
+    { name:'CSS color-mix()', slug:'css-color-mix', support:'83%', url:'https://caniuse.com/?search=color-mix' },
+    { name:'CSS logical properties', slug:'css-logical-properties', support:'92%', url:'https://caniuse.com/?search=logical%20properties' },
+    { name:'CSS clamp()', slug:'css-clamp', support:'95%', url:'https://caniuse.com/?search=clamp' },
+    { name:'CSS min()/max()', slug:'css-minmax', support:'96%', url:'https://caniuse.com/?search=min%20max' },
+    { name:'CSS grid template areas', slug:'css-grid-template-areas', support:'96%', url:'https://caniuse.com/css-grid' },
+    { name:'Pointer Events', slug:'pointer-events', support:'97%', url:'https://caniuse.com/pointer-events' },
     { name:'IntersectionObserver', slug:'intersectionobserver', support:'97%', url:'https://caniuse.com/intersectionobserver' },
     { name:'ResizeObserver', slug:'resizeobserver', support:'97%', url:'https://caniuse.com/resizeobserver' },
     { name:'WebP image format', slug:'webp', support:'97%', url:'https://caniuse.com/webp' },
@@ -111,4 +120,3 @@ async function searchDevDocs(query, box) {
     box.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px">❌ ${msg}. <a href="https://devdocs.io/#q=${encodeURIComponent(query)}" target="_blank" style="color:var(--accent)">Open DevDocs →</a><br/><span style="color:var(--muted);font-size:11px">Input format: docs keyword only, for example fetch API or Python list.</span></div>`;
   }
 }
-

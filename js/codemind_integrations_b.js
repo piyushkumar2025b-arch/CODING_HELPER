@@ -492,6 +492,55 @@ async function fetchColorPalette() {
 ${swatches.map((c,i) => `  --color-${i+1}: ${c.hex.value};`).join('\n')}
 }</code>
         </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">CSS Theme Recipe</div>
+          <code style="display:block;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent3);white-space:pre-wrap;cursor:pointer;line-height:1.7;" onclick="navigator.clipboard.writeText(this.textContent);this.style.borderColor='var(--accent3)';setTimeout(()=>this.style.borderColor='var(--border)',1200)" title="Click to copy">.card {
+  background: var(--color-1);
+  border: 1px solid var(--color-2);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--color-3) 30%, transparent);
+}
+
+.button {
+  background: linear-gradient(135deg, var(--color-4), var(--color-5));
+  color: var(--color-6);
+}</code>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">CSS Variables Preview</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
+            ${swatches.slice(0,6).map((c,i) => `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <div style="width:16px;height:16px;border-radius:4px;background:${c.hex.value};border:1px solid var(--border);"></div>
+                <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);">--color-${i+1}</div>
+              </div>
+              <div style="font-size:11px;color:var(--text);font-family:'JetBrains Mono',monospace;">${c.hex.value}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">CSS Utility Snippets</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">
+            ${[
+              ['Layout', '.stack { display: flex; flex-direction: column; gap: 1rem; }'],
+              ['Clamp', '.title { font-size: clamp(1.25rem, 2vw, 2rem); }'],
+              ['Grid', '.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }'],
+              ['Tokens', ':root { --radius: 16px; --shadow: 0 16px 40px rgba(0,0,0,.18); }']
+            ].map(([label, code]) => `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;">
+              <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${label}</div>
+              <code style="display:block;font-size:10px;line-height:1.5;color:var(--text);font-family:'JetBrains Mono',monospace;white-space:pre-wrap;cursor:pointer;" onclick="navigator.clipboard.writeText(this.textContent);this.style.color='var(--accent3)';setTimeout(()=>this.style.color='var(--text)',1000)">${code}</code>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">
+          ${[
+            ['API use','TheColorAPI palette + color name lookup'],
+            ['CSS use','Theme tokens, gradients, button accents'],
+            ['Copy flow','Click any swatch or snippet to copy instantly']
+          ].map(([k,v]) => `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;">
+            <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${k}</div>
+            <div style="font-size:12px;color:var(--text);line-height:1.5;">${v}</div>
+          </div>`).join('')}
+        </div>
         <a href="https://www.thecolorapi.com" target="_blank" style="font-size:11px;color:var(--muted);text-decoration:none;">Powered by The Color API — free, no key</a>
       </div>`;
   } catch(e) {
@@ -777,4 +826,3 @@ async function fetchMLPapers() {
     }
   }
 }
-

@@ -29,9 +29,17 @@
     ['Array.prototype.flatMap','Map items and flatten one level','https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap','javascript array flatmap'],
     ['CSS Grid Layout','Two-dimensional CSS layout system','https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout','css grid layout'],
     ['Flexbox','One-dimensional CSS layout system','https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout','css flexbox'],
+    ['CSS Nesting','Write nested selectors without a preprocessor','https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_nesting','css nesting'],
+    ['CSS Container Queries','Style components by container size','https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries','css container queries'],
+    ['CSS :has()','Select a parent based on its descendants','https://developer.mozilla.org/en-US/docs/Web/CSS/:has','css has selector'],
+    ['CSS Subgrid','Align nested grid items to the parent grid','https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid','css subgrid'],
+    ['CSS @layer','Control cascade order with named layers','https://developer.mozilla.org/en-US/docs/Web/CSS/@layer','css cascade layers'],
+    ['CSS scroll-snap','Snap scroll positions to specific points','https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll_snap','css scroll snap'],
     ['async / await','Write promise code in a synchronous style','https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function','javascript async await promise'],
     ['localStorage','Persistent key-value browser storage','https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage','browser storage localstorage'],
-    ['Canvas API','Draw graphics with JavaScript','https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API','canvas drawing html5']
+    ['Canvas API','Draw graphics with JavaScript','https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API','canvas drawing html5'],
+    ['IntersectionObserver','Watch elements enter or leave the viewport','https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API','intersection observer lazy loading'],
+    ['ResizeObserver','Listen for element size changes','https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver','resize observer responsive ui']
   ];
 
   window.searchDocs = async function searchDocsFixed() {
