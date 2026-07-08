@@ -846,7 +846,7 @@
       </div>
       <div id="cm_atp_body">
         <div class="cm_atp_banner">
-          Bring your own keys to unlock the full website. Most providers here offer free tiers or trial credits, and many do not require a card to get started, but billing rules can change by region.
+          Paste your keys once and CodeMind will keep them locally for later. When one provider fails, the app can try the saved fallback keys and keep features moving.
         </div>
         <div id="cm_atp_keyed_section">
           <div class="cm_atp_group_label">🔑 Keys Required</div>
@@ -871,6 +871,16 @@
       document.getElementById('cm_atp_toggle_txt').textContent =
         panel.classList.contains('collapsed') ? '▴ expand' : '▾ collapse';
     });
+  }
+
+  function getKeyPromptSummary() {
+    const saved = TESTS.filter(t => t.needsKey && getKey(t.keyRef));
+    const missing = TESTS.filter(t => t.needsKey && !getKey(t.keyRef));
+    return {
+      savedCount: saved.length,
+      missingCount: missing.length,
+      savedLabels: saved.map(t => t.label).join(', '),
+    };
   }
 
   function buildKeyedSection() {
@@ -992,6 +1002,11 @@
   function updateKey(keyRef, value) {
     setKey(keyRef, value.trim());
     injectKeys();
+    const summary = getKeyPromptSummary();
+    const summaryEl = document.getElementById('cm_atp_summary');
+    if (summaryEl) {
+      summaryEl.textContent = `Saved ${summary.savedCount} key${summary.savedCount === 1 ? '' : 's'} locally. ${summary.missingCount} more provider${summary.missingCount === 1 ? '' : 's'} can still be added.`;
+    }
   }
 
   function injectAndClose() {
@@ -1038,6 +1053,14 @@
     injectKeys(); // Inject any already-saved keys immediately
     buildPanel();
 
+    const prompt = getKeyPromptSummary();
+    const summaryEl = document.getElementById('cm_atp_summary');
+    if (summaryEl) {
+      summaryEl.textContent = prompt.savedCount
+        ? `Loaded ${prompt.savedCount} saved key${prompt.savedCount === 1 ? '' : 's'} locally. Add more keys any time to expand fallback coverage.`
+        : 'No keys saved yet. Add your keys here once and CodeMind will retain them locally for future runs.';
+    }
+
     // Auto-run free API tests after a short delay (non-blocking)
     setTimeout(async () => {
       const freeTests = TESTS.filter(t => !t.needsKey);
@@ -1052,6 +1075,10 @@
         if (!key) setRowState(test.id, 'warn', 'Add your key above, then click Test');
       }
     }, 800);
+
+    if (!prompt.savedCount) {
+      setTimeout(() => showPanel(), 600);
+    }
   }
 
   if (document.readyState === 'loading') {
