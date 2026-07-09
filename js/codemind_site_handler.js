@@ -1641,9 +1641,6 @@
     setTimeout(installAskWrapper, 700);
     showStreamlitNotice();
     supabaseInitializeAuth().finally(() => checkSqlite().finally(renderDbBadge));
-    if (!localStorage.getItem(CONNECTOR_SKIP_KEY)) {
-      setTimeout(showAgentsGateway, 500);
-    }
   }
 
   window.CodeMindSite = {
