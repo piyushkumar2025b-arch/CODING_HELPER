@@ -123,6 +123,7 @@ if _secrets_file_exists():
         "cm_deepseek_key":    "DEEPSEEK_API_KEY",
         "cm_supabase_url":    "SUPABASE_URL",
         "cm_supabase_anon":   "SUPABASE_ANON_KEY",
+        "cm_google_client_id": "GOOGLE_CLIENT_ID",
     }
     for _js_key, _secret_name in _KEY_MAP.items():
         try:

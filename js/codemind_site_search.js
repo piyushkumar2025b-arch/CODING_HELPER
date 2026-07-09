@@ -4,6 +4,13 @@
   const TARGETS = [
     { label: 'Theme switcher', run: () => document.getElementById('cm-site-theme-switcher')?.classList.toggle('open') },
     { label: 'Feature cards', run: () => document.getElementById('cm-site-features')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) },
+    { label: 'Agent gateway', run: () => window.CodeMindSite?.showAgentsGateway?.() },
+    { label: 'Email agent', run: () => window.CodeMindSite?.showEmailAgent?.() },
+    { label: 'Music player', run: () => window.CodeMindSite?.showMusicPlayer?.() },
+    { label: 'Web search', run: () => window.CodeMindSite?.showWebSearchAgent?.() },
+    { label: 'Chat agent', run: () => window.CodeMindSite?.showChatAgent?.() },
+    { label: 'Photos', run: () => window.CodeMindSite?.showPhotosAgent?.() },
+    { label: 'Video maker', run: () => window.CodeMindSite?.showVideoAgent?.() },
     { label: 'Local database', run: () => window.CodeMindSite?.showDbPanel?.() },
     { label: 'Streamlit notice', run: () => window.CodeMindSite?.showDatabaseUnavailableNotice?.() },
   ];

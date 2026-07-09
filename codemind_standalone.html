@@ -22708,6 +22708,223 @@ function setOutput(text, type, elapsed, status, time, mem) {
     }
   }
 
+  const agentFeatureLinks = [
+    { label: 'AI Assistant', target: () => document.querySelector('[data-tab="ai"]')?.click?.() || document.querySelector('[data-panel="ai"]')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }) },
+    { label: 'Docs Search', target: () => document.querySelector('[data-tab="docs"]')?.click?.() || document.getElementById('cm-site-features')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }) },
+    { label: 'Dev Tools', target: () => document.querySelector('[data-tab="devtools"]')?.click?.() || document.getElementById('cm-site-features')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }) },
+    { label: 'SQL Playground', target: () => document.querySelector('[data-tab="sql"]')?.click?.() || document.getElementById('cm-site-features')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }) },
+    { label: 'Conversation DB', target: () => showDbPanel() },
+    { label: 'Email Agent', target: () => showEmailAgent() },
+  ];
+
+  function loadGoogleIdentityScript() {
+    if (window.google?.accounts?.oauth2) return Promise.resolve();
+    if (window.__cmGoogleIdPromise) return window.__cmGoogleIdPromise;
+    window.__cmGoogleIdPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-cm-gsi]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve());
+        existing.addEventListener('error', () => reject(new Error('Google identity loader failed.')));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.dataset.cmGsi = '1';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Google identity loader failed.'));
+      document.head.appendChild(script);
+    });
+    return window.__cmGoogleIdPromise;
+  }
+
+  function googleClientId() {
+    return window.CODEMIND_GOOGLE_CLIENT_ID || localStorage.getItem('cm_google_client_id') || '';
+  }
+
+  async function googleAuthorize(scopes) {
+    const clientId = googleClientId();
+    if (!clientId) throw new Error('Add your Google OAuth client ID first.');
+    await loadGoogleIdentityScript();
+    return new Promise((resolve, reject) => {
+      const tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: scopes.join(' '),
+        callback: (response) => {
+          if (response?.access_token) resolve(response.access_token);
+          else reject(new Error(response?.error_description || response?.error || 'Google auth failed.'));
+        },
+      });
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    });
+  }
+
+  function encodeEmailMessage({ to, subject, body }) {
+    const lines = [
+      `To: ${to}`,
+      'Content-Type: text/plain; charset="UTF-8"',
+      'MIME-Version: 1.0',
+      `Subject: ${subject}`,
+      '',
+      body,
+    ];
+    const raw = lines.join('\r\n');
+    return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+
+  async function sendGmailMessage(accessToken, message) {
+    const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ raw: encodeEmailMessage(message) }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Could not send email.');
+    return data;
+  }
+
+  function featureCardsHtml() {
+    return agentFeatureLinks.map((item) => `
+      <button type="button" data-agent-link="${item.label}" style="width:100%;text-align:left;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:900">${item.label}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Open the feature linked to this agent.</div>
+      </button>
+    `).join('');
+  }
+
+  function showAgentsGateway() {
+    const old = document.getElementById('cm-agents-gateway');
+    if (old) { old.remove(); return; }
+    const panel = document.createElement('div');
+    panel.id = 'cm-agents-gateway';
+    panel.className = 'cm-glass';
+    panel.style.cssText = [
+      'position:fixed',
+      'left:18px',
+      'bottom:236px',
+      'width:min(420px,calc(100vw - 36px))',
+      'max-height:62vh',
+      'overflow:auto',
+      'z-index:100000',
+      'border:1px solid rgba(59,130,246,.35)',
+      'border-radius:12px',
+      'background:rgba(17,17,24,.96)',
+      'box-shadow:0 18px 60px rgba(0,0,0,.52)',
+      "font-family:'JetBrains Mono',monospace",
+      'color:#e8e8f0'
+    ].join(';');
+    panel.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px">
+        <div>
+          <div style="font-size:12px;font-weight:900;color:var(--accent3)">Agent Gateway</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.5">Feature-to-agent links for the workspace.</div>
+        </div>
+        <button type="button" id="cm-agents-close" style="border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:6px;padding:6px 8px;cursor:pointer">Close</button>
+      </div>
+      <div style="padding:0 12px 12px">
+        ${featureCardsHtml()}
+      </div>`;
+    document.body.appendChild(panel);
+    panel.querySelectorAll('[data-agent-link]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const link = agentFeatureLinks.find((entry) => entry.label === btn.dataset.agentLink);
+        link?.target?.();
+      });
+    });
+    document.getElementById('cm-agents-close')?.addEventListener('click', () => panel.remove());
+  }
+
+  async function showEmailAgent() {
+    const old = document.getElementById('cm-email-agent');
+    if (old) { old.remove(); return; }
+    const panel = document.createElement('div');
+    panel.id = 'cm-email-agent';
+    panel.className = 'cm-glass';
+    panel.style.cssText = [
+      'position:fixed',
+      'left:18px',
+      'bottom:236px',
+      'width:min(460px,calc(100vw - 36px))',
+      'max-height:68vh',
+      'overflow:auto',
+      'z-index:100001',
+      'border:1px solid rgba(34,197,94,.35)',
+      'border-radius:12px',
+      'background:rgba(17,17,24,.98)',
+      'box-shadow:0 18px 60px rgba(0,0,0,.52)',
+      "font-family:'JetBrains Mono',monospace",
+      'color:#e8e8f0'
+    ].join(';');
+    panel.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px">
+        <div>
+          <div style="font-size:12px;font-weight:900;color:var(--accent3)">Email Agent</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.5">Uses Google sign-in and Gmail send permissions.</div>
+        </div>
+        <button type="button" id="cm-email-close" style="border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:6px;padding:6px 8px;cursor:pointer">Close</button>
+      </div>
+      <div style="padding:0 12px 12px;display:grid;gap:8px">
+        <input id="cm-email-to" placeholder="To" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px">
+        <input id="cm-email-subject" placeholder="Subject" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px">
+        <textarea id="cm-email-body" placeholder="Write your email..." rows="8" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;resize:vertical"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="cm-google-client-id" placeholder="Google OAuth Client ID" value="${googleClientId()}" style="flex:1;min-width:220px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px">
+          <button type="button" id="cm-google-save" style="border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:8px;padding:10px 12px;cursor:pointer">Save</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" id="cm-google-auth" style="border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.12);color:#bbf7d0;border-radius:8px;padding:10px 12px;cursor:pointer">Google auth</button>
+          <button type="button" id="cm-email-send" style="border:1px solid rgba(59,130,246,.35);background:rgba(59,130,246,.12);color:#bfdbfe;border-radius:8px;padding:10px 12px;cursor:pointer">Send email</button>
+        </div>
+        <div id="cm-email-status" style="font-size:11px;color:var(--muted);line-height:1.5">Connect Google, then send directly from Gmail.</div>
+      </div>`;
+    document.body.appendChild(panel);
+    const status = () => document.getElementById('cm-email-status');
+    document.getElementById('cm-google-save')?.addEventListener('click', () => {
+      const clientId = document.getElementById('cm-google-client-id')?.value?.trim() || '';
+      localStorage.setItem('cm_google_client_id', clientId);
+      if (status()) status().textContent = clientId ? 'Google OAuth client ID saved.' : 'Google OAuth client ID cleared.';
+    });
+    document.getElementById('cm-google-auth')?.addEventListener('click', async () => {
+      try {
+        const token = await googleAuthorize([
+          'https://www.googleapis.com/auth/gmail.send',
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+          'openid'
+        ]);
+        localStorage.setItem('cm_google_email_token', token);
+        if (status()) status().textContent = 'Google auth complete. Ready to send emails.';
+      } catch (error) {
+        if (status()) status().textContent = error?.message || 'Google auth failed.';
+      }
+    });
+    document.getElementById('cm-email-send')?.addEventListener('click', async () => {
+      const accessToken = localStorage.getItem('cm_google_email_token') || '';
+      if (!accessToken) {
+        if (status()) status().textContent = 'Authorize with Google first.';
+        return;
+      }
+      const to = document.getElementById('cm-email-to')?.value?.trim() || '';
+      const subject = document.getElementById('cm-email-subject')?.value?.trim() || '';
+      const body = document.getElementById('cm-email-body')?.value?.trim() || '';
+      if (!to || !subject || !body) {
+        if (status()) status().textContent = 'Fill in To, Subject, and Body.';
+        return;
+      }
+      try {
+        await sendGmailMessage(accessToken, { to, subject, body });
+        if (status()) status().textContent = 'Email sent through Gmail.';
+      } catch (error) {
+        if (status()) status().textContent = error?.message || 'Could not send email.';
+      }
+    });
+    document.getElementById('cm-email-close')?.addEventListener('click', () => panel.remove());
+  }
+
   async function supabaseRequest(path, init = {}) {
     if (!supabaseEnabled) return null;
     const headers = { ...SUPABASE_HEADERS, ...(init.headers || {}) };
@@ -23231,6 +23448,8 @@ function setOutput(text, type, elapsed, status, time, mem) {
     isLocalHost,
     signInWithSupabase: supabaseSignUpOrIn,
     signOutSupabase: supabaseSignOut,
+    showAgentsGateway,
+    showEmailAgent,
     saveConversation,
     listConversations: dbReadAll,
     restoreConversation,

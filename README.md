@@ -278,6 +278,50 @@ using (auth.uid() = user_id);
 
 If you want shared or admin-style access, we can adjust the RLS rules to match your use case.
 
+### Agent Gateway And Email Agent
+
+CodeMind now includes an agent gateway that links the main website features to the agents built into the app.
+
+The gateway currently connects to:
+
+- AI Assistant
+- Docs Search
+- Dev Tools
+- SQL Playground
+- Conversation Database
+- Email Agent
+
+The Email Agent uses Google sign-in directly in the browser and sends mail through Gmail after you authorize it.
+
+Set this optional secret if you want Google auth to be available immediately:
+
+```toml
+GOOGLE_CLIENT_ID = "YOUR_GOOGLE_OAUTH_CLIENT_ID"
+```
+
+In Google Cloud, create an OAuth client for a web app and allow the origin where CodeMind runs. The email agent needs the Gmail send scope, so you may need to approve that in the consent screen.
+
+### Free Music Player
+
+CodeMind also includes a movable free music player with:
+
+- archive.org song playback
+- live radio browsing through Radio Browser
+- YouTube mini-player playback
+
+This player is intentionally built from free public services. The archive and radio sources work without a paid key. YouTube playback uses the normal embed player, so you can paste a YouTube link or search term and watch in the mini window.
+
+### Corner Tools
+
+The corner launcher now includes extra tools for:
+
+- web search
+- chat
+- photos browsing and downloading
+- short video creation from free image APIs
+
+These tools are kept optional and can be opened from the corner controls, the agent gateway, or the site search box.
+
 ## Streamlit Deployment
 
 Deploy this repository with:
@@ -352,6 +396,25 @@ http://127.0.0.1:8787
 
 You normally do not need to open this service directly. It is used by the browser app to save and retrieve conversations.
 
+## Run With Docker
+
+If you prefer Docker on your laptop:
+
+```bash
+docker build -t codemind .
+docker run --rm -p 8501:8501 -v "%cd%\\local_data:/app/local_data" codemind
+```
+
+Then open:
+
+```text
+http://localhost:8501
+```
+
+The volume mount keeps your local conversation database on your machine across container restarts.
+
+If you are on PowerShell and the volume syntax feels awkward, I can give you a copy-paste command that matches your exact folder path.
+
 ## Static Local Preview
 
 For a simple static preview, you can serve the folder:
@@ -367,6 +430,18 @@ http://127.0.0.1:5177/codemind.html
 ```
 
 In this mode, SQLite is not automatically started unless you start it yourself through the Python code. The app can still use browser IndexedDB as a local fallback.
+
+## Railway Or Docker Hosting
+
+Yes, you can also deploy this same Docker image on Railway. Docker is the more flexible choice if you want the exact same build to run on your laptop and later on Railway with almost no changes.
+
+Railway works well if you:
+
+- want a public URL
+- are okay using a container
+- may later attach a database or secrets from the dashboard
+
+For your case, Docker on the laptop first is the cleanest starting point.
 
 ## Input Formats
 

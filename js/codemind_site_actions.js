@@ -12,6 +12,13 @@
     pop.style.bottom = '74px';
     pop.innerHTML = `
       <h5>Quick Actions</h5>
+      <button type="button" class="cm-action-item" data-action="agents">Agent gateway</button>
+      <button type="button" class="cm-action-item" data-action="email-agent">Email agent</button>
+      <button type="button" class="cm-action-item" data-action="music-player">Music player</button>
+      <button type="button" class="cm-action-item" data-action="web-search">Web search</button>
+      <button type="button" class="cm-action-item" data-action="chat-agent">Chat agent</button>
+      <button type="button" class="cm-action-item" data-action="photos">Photos</button>
+      <button type="button" class="cm-action-item" data-action="video-maker">Video maker</button>
       <button type="button" class="cm-action-item" data-action="theme">Switch theme</button>
       <button type="button" class="cm-action-item" data-action="search">Search the site</button>
       <button type="button" class="cm-action-item" data-action="sessions">Saved sessions</button>
@@ -20,6 +27,13 @@
     pop.querySelectorAll('[data-action]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const action = btn.dataset.action;
+        if (action === 'agents') window.CodeMindSite?.showAgentsGateway?.();
+        if (action === 'email-agent') window.CodeMindSite?.showEmailAgent?.();
+        if (action === 'music-player') window.CodeMindSite?.showMusicPlayer?.();
+        if (action === 'web-search') window.CodeMindSite?.showWebSearchAgent?.();
+        if (action === 'chat-agent') window.CodeMindSite?.showChatAgent?.();
+        if (action === 'photos') window.CodeMindSite?.showPhotosAgent?.();
+        if (action === 'video-maker') window.CodeMindSite?.showVideoAgent?.();
         if (action === 'theme') document.getElementById('cm-site-theme-switcher')?.classList.toggle('open');
         if (action === 'search') document.dispatchEvent(new CustomEvent('cm:open-site-search'));
         if (action === 'sessions') window.CodeMindSite?.showDbPanel?.();
