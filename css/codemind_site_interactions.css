@@ -1,0 +1,21 @@
+.cm-interactive-hit {
+  cursor: pointer;
+}
+
+.cm-interactive-hit:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.cm-hover-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.cm-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+}
+
+.cm-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--site-accent) 28%, transparent);
+}

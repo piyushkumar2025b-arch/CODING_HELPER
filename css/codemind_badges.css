@@ -1,0 +1,137 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND BADGES & CHIPS — codemind_badges.css
+   Status dots, language chips, score badges, tag pills
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── BASE BADGE ── */
+.cm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1.6;
+}
+
+/* Colors */
+.cm-badge-cyan    { background: rgba(0,229,255,.12);  color: #00e5ff;  border: 1px solid rgba(0,229,255,.25); }
+.cm-badge-violet  { background: rgba(124,58,237,.12); color: #a78bfa;  border: 1px solid rgba(124,58,237,.25); }
+.cm-badge-mint    { background: rgba(16,185,129,.12); color: #34d399;  border: 1px solid rgba(16,185,129,.25); }
+.cm-badge-pink    { background: rgba(236,72,153,.12); color: #f472b6;  border: 1px solid rgba(236,72,153,.25); }
+.cm-badge-amber   { background: rgba(245,158,11,.12); color: #fbbf24;  border: 1px solid rgba(245,158,11,.25); }
+.cm-badge-red     { background: rgba(239,68,68,.12);  color: #f87171;  border: 1px solid rgba(239,68,68,.25); }
+.cm-badge-gray    { background: rgba(255,255,255,.07);color: var(--muted); border: 1px solid var(--border); }
+
+/* Semantic */
+.cm-badge-ok      { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.3); }
+.cm-badge-warn    { background: rgba(245,158,11,.15); color: #fbbf24; border: 1px solid rgba(245,158,11,.3); }
+.cm-badge-err     { background: rgba(239,68,68,.15);  color: #f87171; border: 1px solid rgba(239,68,68,.3); }
+.cm-badge-info    { background: rgba(0,229,255,.1);   color: #00e5ff; border: 1px solid rgba(0,229,255,.2); }
+
+/* ── STATUS DOT ── */
+.cm-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cm-dot-online  { background: #34d399; box-shadow: 0 0 6px #34d399; }
+.cm-dot-busy    { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; }
+.cm-dot-error   { background: #f87171; box-shadow: 0 0 6px #f87171; }
+.cm-dot-offline { background: var(--muted); }
+.cm-dot-pulse   { animation: cm-ping 1.4s ease-out infinite; }
+
+/* ── LANGUAGE CHIP ── */
+.cm-lang-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .15s;
+}
+.cm-lang-chip:hover,
+.cm-lang-chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0,229,255,.07);
+}
+.cm-lang-chip .cm-lang-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* ── PLATFORM TAG ── */
+.cm-plat-tag {
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* ── SCORE BADGE (contest/leetcode) ── */
+.cm-score-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  font-family: 'JetBrains Mono', monospace;
+}
+.cm-score-badge .cm-score-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+.cm-score-badge .cm-score-label {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── DIFFICULTY BADGES ── */
+.cm-diff-easy   { color: #34d399; border-color: rgba(52,211,153,.3); background: rgba(52,211,153,.08); }
+.cm-diff-medium { color: #fbbf24; border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.08); }
+.cm-diff-hard   { color: #f87171; border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.08); }
+
+/* ── KBD / SHORTCUT CHIP ── */
+kbd,
+.cm-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text);
+  box-shadow: 0 1px 0 rgba(0,0,0,.4);
+}

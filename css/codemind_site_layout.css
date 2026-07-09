@@ -1,0 +1,15 @@
+.cm-site-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.cm-site-layout > section {
+  border-radius: 20px;
+  border: 1px solid var(--site-border);
+  background: var(--site-surface);
+}
+
+.cm-site-wide {
+  width: min(1440px, calc(100vw - 24px));
+  margin: 0 auto;
+}

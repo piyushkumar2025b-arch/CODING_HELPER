@@ -1,0 +1,52 @@
+#cm_hub_panel {
+  border: 1px solid rgba(0, 229, 255, 0.14);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+#cm_hub_header {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.08), rgba(124, 58, 237, 0.12));
+}
+
+.cm_group_label {
+  color: rgba(178, 188, 220, 0.78);
+}
+
+.cm_row {
+  position: relative;
+  overflow: hidden;
+}
+
+.cm_row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.06), transparent);
+  transform: translateX(-120%);
+  transition: transform 280ms ease;
+}
+
+.cm_row:hover::before {
+  transform: translateX(120%);
+}
+
+.cm_row.cm_has_key {
+  border-left-color: rgba(124, 58, 237, 0.95);
+}
+
+.cm_key_block.open {
+  display: block;
+  animation: cmPopIn 180ms ease-out;
+}
+
+@keyframes cmPopIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cm_btn_save {
+  background: linear-gradient(135deg, #00e5ff, #7c3aed);
+}
+
+.cm_btn_save:hover {
+  filter: brightness(1.08);
+}

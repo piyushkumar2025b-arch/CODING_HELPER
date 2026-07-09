@@ -1,0 +1,14 @@
+.cm-depth-1 { box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.cm-depth-2 { box-shadow: 0 16px 40px rgba(0,0,0,.24); }
+.cm-depth-3 { box-shadow: 0 28px 72px rgba(0,0,0,.32); }
+
+.cm-depth-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+}
+
+.cm-depth-card:hover {
+  border-color: rgba(0,229,255,.18);
+  transform: translateY(-1px);
+}

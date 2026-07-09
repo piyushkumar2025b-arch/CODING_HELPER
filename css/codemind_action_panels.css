@@ -1,0 +1,92 @@
+/* === CodeMind: codemind_action_panels.css ===
+   Extracted from inline <style> block 7
+*/
+
+/* Shared "pure actions" layer for the main problem/utility panels. */
+
+.action-row,
+.options-row,
+.toolbar-right,
+.docs-search-row,
+.docs-source-bar,
+.regex-input-row,
+.platform-row,
+.vsc-controls-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn,
+.tbtn,
+.opt-btn,
+.plat-tag,
+.docs-source-btn,
+.flag-btn,
+.vsc-ctrl-btn,
+.preview-close,
+.vsc-add-tab-btn {
+  border: 1px solid var(--line-soft, rgba(255,255,255,.1));
+  background: rgba(255,255,255,.04);
+  color: var(--text, #e8e8f0);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+}
+
+.btn:hover,
+.tbtn:hover,
+.opt-btn:hover,
+.plat-tag:hover,
+.docs-source-btn:hover,
+.flag-btn:hover,
+.vsc-ctrl-btn:hover,
+.preview-close:hover,
+.vsc-add-tab-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 229, 255, .35);
+}
+
+.btn-primary,
+.btn-run,
+.tbtn.run-btn {
+  background: linear-gradient(135deg, var(--accent2, #7c3aed), var(--accent, #00e5ff));
+  color: #fff;
+}
+
+.btn-secondary,
+.tbtn:not(.run-btn):not(.debug-btn):not(.preview-btn) {
+  background: rgba(255,255,255,.04);
+}
+
+.opt-btn.active,
+.plat-tag.active-lc,
+.plat-tag.active-cf,
+.plat-tag.active-gen,
+.docs-source-btn.active,
+.flag-btn.active {
+  box-shadow: 0 0 0 1px rgba(0,229,255,.16), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.input-label,
+.sidebar-label,
+.terminal-header-label,
+.output-header-label,
+.preview-header-label {
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+input,
+select,
+textarea {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--line-soft, rgba(255,255,255,.1));
+  color: var(--text, #e8e8f0);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent, #00e5ff);
+  box-shadow: 0 0 0 3px rgba(0,229,255,.08);
+}

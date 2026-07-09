@@ -1,0 +1,315 @@
+/* === CodeMind: codemind_insane_polish.css ===
+   Extracted from inline <style> block 11
+*/
+
+/* Insane additive polish only.
+   This file intentionally avoids layout changes and only layers visuals on top. */
+
+:root {
+  --cm-insane-glow: rgba(0, 229, 255, 0.28);
+  --cm-insane-glow-2: rgba(124, 58, 237, 0.24);
+  --cm-insane-glow-3: rgba(16, 185, 129, 0.18);
+  --cm-insane-border: rgba(148, 163, 184, 0.22);
+}
+
+body {
+  text-rendering: geometricPrecision;
+}
+
+#app {
+  isolation: isolate;
+}
+
+#app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(0, 229, 255, 0.10), transparent 18%),
+    radial-gradient(circle at 90% 15%, rgba(124, 58, 237, 0.10), transparent 22%),
+    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.08), transparent 20%);
+  mix-blend-mode: screen;
+  opacity: .85;
+}
+
+.logo-icon,
+.api-badge,
+.tab.active,
+.mode-btn.active,
+.opt-btn.active,
+.plat-tag.active-lc,
+.plat-tag.active-cf,
+.plat-tag.active-gen,
+.docs-source-btn.active,
+.flag-btn.active,
+.vsc-tab.active,
+.vsc-ctrl-btn:hover,
+.terminal-btn-run,
+.btn-primary,
+.btn-run,
+.tbtn.run-btn {
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.12),
+    0 0 24px rgba(0, 229, 255, 0.10),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.tab.active,
+.mode-btn.active,
+.opt-btn.active,
+.plat-tag.active-lc,
+.plat-tag.active-cf,
+.plat-tag.active-gen,
+.docs-source-btn.active,
+.flag-btn.active,
+.vsc-tab.active {
+  position: relative;
+}
+
+.tab.active::after,
+.mode-btn.active::after,
+.opt-btn.active::after,
+.plat-tag.active-lc::after,
+.plat-tag.active-cf::after,
+.plat-tag.active-gen::after,
+.docs-source-btn.active::after,
+.flag-btn.active::after,
+.vsc-tab.active::after {
+  content: "";
+  position: absolute;
+  inset: auto 10px -1px 10px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, .85), transparent);
+  pointer-events: none;
+}
+
+.api-badge,
+.btn,
+.tbtn,
+.opt-btn,
+.plat-tag,
+.docs-source-btn,
+.flag-btn,
+.vsc-ctrl-btn,
+.terminal-btn,
+.preview-close,
+.vsc-add-tab-btn,
+.vault-btn,
+.quiz-opt,
+.roadmap-topic,
+.cs-item,
+.dt-btn {
+  border-color: var(--cm-insane-border);
+}
+
+.api-badge:hover,
+.btn:hover,
+.tbtn:hover,
+.opt-btn:hover,
+.plat-tag:hover,
+.docs-source-btn:hover,
+.flag-btn:hover,
+.vsc-ctrl-btn:hover,
+.terminal-btn:hover,
+.preview-close:hover,
+.vsc-add-tab-btn:hover,
+.vault-btn:hover,
+.quiz-opt:hover,
+.roadmap-topic:hover,
+.cs-item:hover,
+.dt-btn:hover {
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, .16),
+    0 8px 30px rgba(0, 0, 0, .22);
+}
+
+.terminal-output-content,
+.output-box,
+.regex-result-box,
+.docs-result,
+.npm-result,
+.weather-card,
+.news-card,
+.vault-file-card,
+.npm-pkg-card,
+.gh-repo-card,
+.caniuse-result,
+.quote-card,
+.joke-card,
+.quiz-card,
+.flashcard,
+.roadmap-phase,
+.iv-qa-card,
+.dt-card,
+.cm_glass {
+  backdrop-filter: blur(16px) saturate(145%);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+}
+
+.terminal-output-content,
+.output-box,
+.regex-result-box,
+.docs-result,
+.npm-result,
+.weather-card,
+.news-card,
+.vault-file-card,
+.npm-pkg-card,
+.gh-repo-card,
+.caniuse-result,
+.quote-card,
+.joke-card,
+.quiz-card,
+.flashcard,
+.roadmap-phase,
+.iv-qa-card,
+.dt-card {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.05), transparent 30%),
+    linear-gradient(135deg, rgba(0,229,255,.03), rgba(124,58,237,.02));
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, .24),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.terminal-pane.active,
+.panel.active,
+.vsc-terminal-body,
+.question-panel,
+.response-panel,
+.regex-panel,
+.docs-panel,
+.roadmap-panel,
+.interview-panel,
+.flashcard-panel,
+.quiz-panel,
+.devtools-panel,
+.npm-search-wrap,
+.cheatsheet-panel,
+.so-panel {
+  position: relative;
+}
+
+.terminal-pane.active::before,
+.panel.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(0,229,255,.025), transparent 45%, rgba(124,58,237,.02));
+  opacity: .9;
+}
+
+.vsc-term-item.active {
+  background:
+    linear-gradient(90deg, rgba(0,229,255,.10), rgba(124,58,237,.10)),
+    rgba(255,255,255,.02);
+}
+
+.terminal-msg.muted,
+.empty-state,
+.empty-text,
+.modal p,
+.docs-result-desc,
+.weather-desc,
+.gh-repo-desc,
+.caniuse-desc,
+.news-meta-item,
+.vault-file-size,
+.vault-file-date {
+  color: color-mix(in srgb, var(--muted, #6b6b80) 88%, white);
+}
+
+.terminal-msg.error,
+.regex-err,
+.quiz-opt.wrong,
+.quiz-opt.quiz-wrong,
+.vault-btn.rm,
+.support-no {
+  text-shadow: 0 0 14px rgba(239, 68, 68, .12);
+}
+
+.terminal-msg.warn,
+.news-score,
+.support-partial,
+.score-c {
+  text-shadow: 0 0 14px rgba(245, 158, 11, .12);
+}
+
+.terminal-msg.info,
+.support-yes,
+.score-a,
+.score-b {
+  text-shadow: 0 0 14px rgba(0, 229, 255, .10);
+}
+
+.logo-icon,
+.vsc-term-icon,
+.empty-icon,
+.weather-icon,
+.browser-icon,
+.fc-term,
+.quiz-score-big,
+.pomo-time {
+  filter: drop-shadow(0 0 16px rgba(0, 229, 255, .12));
+}
+
+.docs-result-card:hover,
+.news-card:hover,
+.vault-file-card:hover,
+.gh-repo-card:hover,
+.caniuse-result:hover,
+.quote-card:hover,
+.joke-card:hover,
+.quiz-card:hover,
+.flashcard:hover,
+.roadmap-phase:hover,
+.iv-qa-card:hover,
+.dt-card:hover {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .api-badge,
+  .btn,
+  .tbtn,
+  .opt-btn,
+  .plat-tag,
+  .docs-source-btn,
+  .flag-btn,
+  .vsc-ctrl-btn,
+  .terminal-btn,
+  .preview-close,
+  .vsc-add-tab-btn,
+  .vault-btn,
+  .quiz-opt,
+  .roadmap-topic,
+  .cs-item,
+  .dt-btn,
+  .docs-result-card,
+  .news-card,
+  .vault-file-card,
+  .gh-repo-card,
+  .caniuse-result,
+  .quote-card,
+  .joke-card,
+  .quiz-card,
+  .flashcard,
+  .roadmap-phase,
+  .iv-qa-card,
+  .dt-card {
+    transition-duration: 160ms;
+  }
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0,229,255,.55), rgba(124,58,237,.45));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0,229,255,.75), rgba(124,58,237,.62));
+}

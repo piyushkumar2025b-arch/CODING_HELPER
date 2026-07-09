@@ -1,0 +1,13 @@
+.cm-card-accent {
+  border: 1px solid var(--site-border);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--site-accent) 12%, transparent), transparent 35%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.cm-card-accent .cm-card-title {
+  color: var(--site-text);
+  font-weight: 700;
+}

@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND TABS — codemind_tabs.css
+   Tab bar variants: underline, pill, boxed, vertical
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── BASE TAB BAR ── */
+.cm-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.cm-tabs::-webkit-scrollbar { display: none; }
+
+/* ── UNDERLINE TAB (default) ── */
+.cm-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all .15s;
+  position: relative;
+  user-select: none;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: -1px;
+}
+.cm-tab:hover {
+  color: var(--text);
+  background: rgba(255,255,255,.04);
+}
+.cm-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: rgba(0,229,255,.05);
+}
+.cm-tab .cm-tab-icon { font-size: 14px; }
+.cm-tab .cm-tab-count {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.08);
+  color: var(--muted);
+  font-weight: 600;
+}
+.cm-tab.active .cm-tab-count {
+  background: rgba(0,229,255,.15);
+  color: var(--accent);
+}
+
+/* ── PILL TABS ── */
+.cm-tabs-pill {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg3);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.cm-tabs-pill .cm-tab {
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  border-bottom: none;
+  margin: 0;
+}
+.cm-tabs-pill .cm-tab.active {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+/* ── BOXED TABS ── */
+.cm-tabs-boxed {
+  border-bottom: none;
+  gap: 6px;
+  padding: 8px;
+  flex-wrap: wrap;
+}
+.cm-tabs-boxed .cm-tab {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 0;
+  padding: 7px 12px;
+}
+.cm-tabs-boxed .cm-tab.active {
+  border-color: var(--accent);
+  background: rgba(0,229,255,.08);
+}
+
+/* ── VERTICAL TABS ── */
+.cm-tabs-vertical {
+  flex-direction: column;
+  border-bottom: none;
+  border-right: 1px solid var(--border);
+  padding: 8px 0;
+  gap: 2px;
+}
+.cm-tabs-vertical .cm-tab {
+  border-bottom: none;
+  border-right: 2px solid transparent;
+  border-radius: 8px 0 0 8px;
+  margin-bottom: 0;
+  margin-right: -1px;
+  justify-content: flex-start;
+}
+.cm-tabs-vertical .cm-tab.active {
+  border-right-color: var(--accent);
+  background: rgba(0,229,255,.06);
+}
+
+/* ── TAB CONTENT PANEL ── */
+.cm-tab-content { display: none; }
+.cm-tab-content.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+/* ── TAB PANEL SCROLLABLE ── */
+.cm-tab-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 16px;
+}

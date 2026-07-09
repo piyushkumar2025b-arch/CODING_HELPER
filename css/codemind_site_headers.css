@@ -1,0 +1,19 @@
+.cm-site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.cm-site-header h1,
+.cm-site-header h2,
+.cm-site-header h3 {
+  margin: 0;
+  color: var(--site-text);
+}
+
+.cm-site-subtitle {
+  margin-top: 6px;
+  color: var(--site-muted);
+}

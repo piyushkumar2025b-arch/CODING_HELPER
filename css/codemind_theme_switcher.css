@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND THEME SWITCHER UI — codemind_theme_switcher.css
+   Floating palette picker, swatch buttons, active indicator
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Container — slides in from the right */
+#cm-theme-switcher {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8800;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+}
+
+/* Toggle tab on the right edge */
+#cm-theme-tab {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  padding: 14px 7px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: .08em;
+  user-select: none;
+  transition: background .2s, color .2s;
+}
+#cm-theme-tab:hover {
+  background: var(--bg2);
+  color: var(--text);
+}
+
+/* Palette drawer */
+#cm-theme-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 14px 0 0 14px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: -8px 0 40px rgba(0,0,0,.5);
+  width: 0;
+  overflow: hidden;
+  transition: width .28s cubic-bezier(.4,0,.2,1), padding .28s;
+}
+#cm-theme-panel.open {
+  width: 160px;
+  padding: 16px 12px;
+}
+
+/* Section label */
+.cm-theme-label {
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* Individual theme button */
+.cm-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.cm-theme-btn:hover {
+  background: var(--bg3);
+  border-color: var(--border);
+}
+.cm-theme-btn.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* Color swatch dot */
+.cm-theme-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.2);
+}
+.cm-theme-swatch.midnight { background: linear-gradient(135deg, #00e5ff, #8b5cf6); }
+.cm-theme-swatch.forest   { background: linear-gradient(135deg, #22c55e, #84cc16); }
+.cm-theme-swatch.ocean    { background: linear-gradient(135deg, #38bdf8, #818cf8); }
+.cm-theme-swatch.ember    { background: linear-gradient(135deg, #f97316, #ef4444); }
+.cm-theme-swatch.violet   { background: linear-gradient(135deg, #a78bfa, #e879f9); }
+.cm-theme-swatch.mono     { background: linear-gradient(135deg, #f4f4f4, #888888); }
+
+/* Theme name text */
+.cm-theme-name {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text);
+  text-transform: capitalize;
+}
+.cm-theme-btn.active .cm-theme-name {
+  color: var(--accent);
+}
+
+/* Active tick */
+.cm-theme-check {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.cm-theme-btn.active .cm-theme-check { opacity: 1; }

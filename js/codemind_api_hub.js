@@ -1471,7 +1471,16 @@
       }
     },
 
-  ]; // end REGISTRY
+  ];
+
+  const EXTRA_DEFS = Array.isArray(window.CM_API_EXTRA_DEFS) ? window.CM_API_EXTRA_DEFS.filter(Boolean) : [];
+  EXTRA_DEFS.forEach((entry) => {
+    if (!entry || !entry.id) return;
+    if (REGISTRY.some((item) => item.id === entry.id)) return;
+    REGISTRY.push(entry);
+  });
+
+  // end REGISTRY
 
   /* Build a quick lookup map */
   const API = {};

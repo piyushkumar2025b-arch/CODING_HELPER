@@ -1,0 +1,153 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND MODALS & OVERLAYS — codemind_modals.css
+   Dialog shells, backdrops, drawers, confirm boxes
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── BACKDROP ── */
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, .72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: cm-fade-in .18s ease both;
+}
+.cm-overlay.cm-overlay-top    { align-items: flex-start; padding-top: 10vh; }
+.cm-overlay.cm-overlay-bottom { align-items: flex-end; padding-bottom: 5vh; }
+
+/* ── MODAL BOX ── */
+.cm-modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(0,229,255,.06);
+  animation: cm-scale-in .22s cubic-bezier(.4,0,.2,1) both;
+  position: relative;
+}
+
+.cm-modal-sm  { width: min(380px, 100%); }
+.cm-modal-lg  { width: min(780px, 100%); }
+.cm-modal-xl  { width: min(1100px, 100%); }
+.cm-modal-full{ width: calc(100vw - 32px); height: calc(100vh - 32px); max-height: none; }
+
+/* ── MODAL HEADER ── */
+.cm-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg2);
+  z-index: 2;
+  backdrop-filter: blur(10px);
+}
+.cm-modal-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(0,229,255,.1);
+  border: 1px solid rgba(0,229,255,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.cm-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.cm-modal-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.cm-modal-close {
+  margin-left: auto;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.cm-modal-close:hover { background: var(--bg3); border-color: var(--border); color: var(--text); }
+
+/* ── MODAL BODY ── */
+.cm-modal-body {
+  padding: 20px;
+}
+
+/* ── MODAL FOOTER ── */
+.cm-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+}
+
+/* ── DRAWER (slides from right) ── */
+.cm-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8900;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(4px);
+  animation: cm-fade-in .2s ease both;
+}
+.cm-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 90vw);
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  z-index: 8950;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -20px 0 60px rgba(0,0,0,.5);
+  animation: cm-slide-left .28s cubic-bezier(.4,0,.2,1) both;
+  overflow: hidden;
+}
+.cm-drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ── CONFIRM DIALOG ── */
+.cm-confirm {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: min(380px, 100%);
+  text-align: center;
+  animation: cm-scale-in .2s ease both;
+}
+.cm-confirm-icon  { font-size: 36px; margin-bottom: 12px; }
+.cm-confirm-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.cm-confirm-body  { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.cm-confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* ── NEON GLOW BORDER MODAL VARIANT ── */
+.cm-modal-neon {
+  border-color: rgba(0,229,255,.3);
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 40px rgba(0,229,255,.1);
+}

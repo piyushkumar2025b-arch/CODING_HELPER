@@ -1,0 +1,15 @@
+.cm-widget-panel {
+  min-width: 240px;
+}
+
+.cm-widget-panel .cm-widget-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: var(--site-muted);
+}
+
+.cm-widget-panel .cm-widget-row strong {
+  color: var(--site-text);
+}

@@ -1,0 +1,41 @@
+.cm-feature-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.cm-feature-card {
+  border: 1px solid var(--site-border);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.cm-feature-card h4 {
+  margin: 0 0 6px;
+  color: var(--site-text);
+}
+
+.cm-feature-card p {
+  margin: 0;
+  color: var(--site-muted);
+  font-size: 13px;
+}
+
+.cm-spotlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.cm-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--site-accent) 18%, transparent) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.cm-spotlight:hover::after {
+  opacity: 1;
+}

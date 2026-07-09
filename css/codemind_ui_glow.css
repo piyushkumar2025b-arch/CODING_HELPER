@@ -1,0 +1,13 @@
+.cm-glow-strong {
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,.22),
+    0 0 28px rgba(0,229,255,.16),
+    0 0 56px rgba(124,58,237,.10);
+}
+
+.cm-glow-hover:hover {
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,.25),
+    0 0 34px rgba(0,229,255,.18),
+    0 0 80px rgba(124,58,237,.12);
+}

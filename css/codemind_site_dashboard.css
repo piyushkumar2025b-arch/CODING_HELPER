@@ -1,0 +1,18 @@
+.cm-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.cm-dashboard-card {
+  border: 1px solid var(--site-border);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.cm-dashboard-card strong {
+  display: block;
+  color: var(--site-text);
+  margin-bottom: 4px;
+}

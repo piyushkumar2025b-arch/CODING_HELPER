@@ -1,0 +1,461 @@
+{
+  "root": "C:\\Users\\Piyush Kumar\\OneDrive\\Desktop\\CODING_HELPER\\CODING_HELPER",
+  "count": 91,
+  "assets": [
+    {
+      "path": "__inline_1.js",
+      "kind": "source-js",
+      "name": "__inline_1.js"
+    },
+    {
+      "path": "CodeEditor.tsx",
+      "kind": "source-tsx",
+      "name": "CodeEditor.tsx"
+    },
+    {
+      "path": "codemind_api_controller.js",
+      "kind": "source-js",
+      "name": "codemind_api_controller.js"
+    },
+    {
+      "path": "codemind_api_hub.js",
+      "kind": "source-js",
+      "name": "codemind_api_hub.js"
+    },
+    {
+      "path": "codemind_standalone.html",
+      "kind": "html",
+      "name": "codemind_standalone.html"
+    },
+    {
+      "path": "css/codemind_action_panels.css",
+      "kind": "css",
+      "name": "codemind_action_panels.css"
+    },
+    {
+      "path": "css/codemind_animations.css",
+      "kind": "css",
+      "name": "codemind_animations.css"
+    },
+    {
+      "path": "css/codemind_api_insane_overlay.css",
+      "kind": "css",
+      "name": "codemind_api_insane_overlay.css"
+    },
+    {
+      "path": "css/codemind_api_overlay.css",
+      "kind": "css",
+      "name": "codemind_api_overlay.css"
+    },
+    {
+      "path": "css/codemind_api_panel_std.css",
+      "kind": "css",
+      "name": "codemind_api_panel_std.css"
+    },
+    {
+      "path": "css/codemind_api_panels.css",
+      "kind": "css",
+      "name": "codemind_api_panels.css"
+    },
+    {
+      "path": "css/codemind_badges.css",
+      "kind": "css",
+      "name": "codemind_badges.css"
+    },
+    {
+      "path": "css/codemind_buttons.css",
+      "kind": "css",
+      "name": "codemind_buttons.css"
+    },
+    {
+      "path": "css/codemind_cards.css",
+      "kind": "css",
+      "name": "codemind_cards.css"
+    },
+    {
+      "path": "css/codemind_core_theme.css",
+      "kind": "css",
+      "name": "codemind_core_theme.css"
+    },
+    {
+      "path": "css/codemind_extras_glass.css",
+      "kind": "css",
+      "name": "codemind_extras_glass.css"
+    },
+    {
+      "path": "css/codemind_extras_motion.css",
+      "kind": "css",
+      "name": "codemind_extras_motion.css"
+    },
+    {
+      "path": "css/codemind_extras_surface.css",
+      "kind": "css",
+      "name": "codemind_extras_surface.css"
+    },
+    {
+      "path": "css/codemind_forms.css",
+      "kind": "css",
+      "name": "codemind_forms.css"
+    },
+    {
+      "path": "css/codemind_glass_layers.css",
+      "kind": "css",
+      "name": "codemind_glass_layers.css"
+    },
+    {
+      "path": "css/codemind_insane_additions.css",
+      "kind": "css",
+      "name": "codemind_insane_additions.css"
+    },
+    {
+      "path": "css/codemind_insane_polish.css",
+      "kind": "css",
+      "name": "codemind_insane_polish.css"
+    },
+    {
+      "path": "css/codemind_layout_structure.css",
+      "kind": "css",
+      "name": "codemind_layout_structure.css"
+    },
+    {
+      "path": "css/codemind_loading.css",
+      "kind": "css",
+      "name": "codemind_loading.css"
+    },
+    {
+      "path": "css/codemind_modal_cards.css",
+      "kind": "css",
+      "name": "codemind_modal_cards.css"
+    },
+    {
+      "path": "css/codemind_modals.css",
+      "kind": "css",
+      "name": "codemind_modals.css"
+    },
+    {
+      "path": "css/codemind_more_panels.css",
+      "kind": "css",
+      "name": "codemind_more_panels.css"
+    },
+    {
+      "path": "css/codemind_motion_animations.css",
+      "kind": "css",
+      "name": "codemind_motion_animations.css"
+    },
+    {
+      "path": "css/codemind_neon_extra.css",
+      "kind": "css",
+      "name": "codemind_neon_extra.css"
+    },
+    {
+      "path": "css/codemind_neon_polish.css",
+      "kind": "css",
+      "name": "codemind_neon_polish.css"
+    },
+    {
+      "path": "css/codemind_pure_actions.css",
+      "kind": "css",
+      "name": "codemind_pure_actions.css"
+    },
+    {
+      "path": "css/codemind_scrollbars.css",
+      "kind": "css",
+      "name": "codemind_scrollbars.css"
+    },
+    {
+      "path": "css/codemind_sidebar.css",
+      "kind": "css",
+      "name": "codemind_sidebar.css"
+    },
+    {
+      "path": "css/codemind_structure.css",
+      "kind": "css",
+      "name": "codemind_structure.css"
+    },
+    {
+      "path": "css/codemind_surface_polish.css",
+      "kind": "css",
+      "name": "codemind_surface_polish.css"
+    },
+    {
+      "path": "css/codemind_tabs.css",
+      "kind": "css",
+      "name": "codemind_tabs.css"
+    },
+    {
+      "path": "css/codemind_terminal.css",
+      "kind": "css",
+      "name": "codemind_terminal.css"
+    },
+    {
+      "path": "css/codemind_terminal_std.css",
+      "kind": "css",
+      "name": "codemind_terminal_std.css"
+    },
+    {
+      "path": "css/codemind_terminal_vscode.css",
+      "kind": "css",
+      "name": "codemind_terminal_vscode.css"
+    },
+    {
+      "path": "css/codemind_theme_switcher.css",
+      "kind": "css",
+      "name": "codemind_theme_switcher.css"
+    },
+    {
+      "path": "css/codemind_themes.css",
+      "kind": "css",
+      "name": "codemind_themes.css"
+    },
+    {
+      "path": "css/codemind_tooltips.css",
+      "kind": "css",
+      "name": "codemind_tooltips.css"
+    },
+    {
+      "path": "css/codemind_typography.css",
+      "kind": "css",
+      "name": "codemind_typography.css"
+    },
+    {
+      "path": "css/codemind_ui_additions.css",
+      "kind": "css",
+      "name": "codemind_ui_additions.css"
+    },
+    {
+      "path": "css/codemind_ultra_insane_additions.css",
+      "kind": "css",
+      "name": "codemind_ultra_insane_additions.css"
+    },
+    {
+      "path": "css/codemind_ultra_polish.css",
+      "kind": "css",
+      "name": "codemind_ultra_polish.css"
+    },
+    {
+      "path": "executor.ts",
+      "kind": "source-ts",
+      "name": "executor.ts"
+    },
+    {
+      "path": "gemini.ts",
+      "kind": "source-ts",
+      "name": "gemini.ts"
+    },
+    {
+      "path": "index.ts",
+      "kind": "source-ts",
+      "name": "index.ts"
+    },
+    {
+      "path": "js/codemind_aicr.js",
+      "kind": "source-js",
+      "name": "codemind_aicr.js"
+    },
+    {
+      "path": "js/codemind_api_controller.js",
+      "kind": "source-js",
+      "name": "codemind_api_controller.js"
+    },
+    {
+      "path": "js/codemind_api_dictionary.js",
+      "kind": "source-js",
+      "name": "codemind_api_dictionary.js"
+    },
+    {
+      "path": "js/codemind_api_e2e_handler.js",
+      "kind": "source-js",
+      "name": "codemind_api_e2e_handler.js"
+    },
+    {
+      "path": "js/codemind_api_github_public.js",
+      "kind": "source-js",
+      "name": "codemind_api_github_public.js"
+    },
+    {
+      "path": "js/codemind_api_hub.js",
+      "kind": "source-js",
+      "name": "codemind_api_hub.js"
+    },
+    {
+      "path": "js/codemind_api_jokeapi.js",
+      "kind": "source-js",
+      "name": "codemind_api_jokeapi.js"
+    },
+    {
+      "path": "js/codemind_api_nominatim.js",
+      "kind": "source-js",
+      "name": "codemind_api_nominatim.js"
+    },
+    {
+      "path": "js/codemind_api_open_exchange.js",
+      "kind": "source-js",
+      "name": "codemind_api_open_exchange.js"
+    },
+    {
+      "path": "js/codemind_api_open_library.js",
+      "kind": "source-js",
+      "name": "codemind_api_open_library.js"
+    },
+    {
+      "path": "js/codemind_api_open_meteo.js",
+      "kind": "source-js",
+      "name": "codemind_api_open_meteo.js"
+    },
+    {
+      "path": "js/codemind_api_rest_countries.js",
+      "kind": "source-js",
+      "name": "codemind_api_rest_countries.js"
+    },
+    {
+      "path": "js/codemind_cheatsheet.js",
+      "kind": "source-js",
+      "name": "codemind_cheatsheet.js"
+    },
+    {
+      "path": "js/codemind_devtools.js",
+      "kind": "source-js",
+      "name": "codemind_devtools.js"
+    },
+    {
+      "path": "js/codemind_docs.js",
+      "kind": "source-js",
+      "name": "codemind_docs.js"
+    },
+    {
+      "path": "js/codemind_feature_handler.js",
+      "kind": "source-js",
+      "name": "codemind_feature_handler.js"
+    },
+    {
+      "path": "js/codemind_flashcards.js",
+      "kind": "source-js",
+      "name": "codemind_flashcards.js"
+    },
+    {
+      "path": "js/codemind_gemini.js",
+      "kind": "source-js",
+      "name": "codemind_gemini.js"
+    },
+    {
+      "path": "js/codemind_github.js",
+      "kind": "source-js",
+      "name": "codemind_github.js"
+    },
+    {
+      "path": "js/codemind_gitignore.js",
+      "kind": "source-js",
+      "name": "codemind_gitignore.js"
+    },
+    {
+      "path": "js/codemind_init_ext.js",
+      "kind": "source-js",
+      "name": "codemind_init_ext.js"
+    },
+    {
+      "path": "js/codemind_integrations_a.js",
+      "kind": "source-js",
+      "name": "codemind_integrations_a.js"
+    },
+    {
+      "path": "js/codemind_integrations_b.js",
+      "kind": "source-js",
+      "name": "codemind_integrations_b.js"
+    },
+    {
+      "path": "js/codemind_interview.js",
+      "kind": "source-js",
+      "name": "codemind_interview.js"
+    },
+    {
+      "path": "js/codemind_option_api_fixes.js",
+      "kind": "source-js",
+      "name": "codemind_option_api_fixes.js"
+    },
+    {
+      "path": "js/codemind_quiz.js",
+      "kind": "source-js",
+      "name": "codemind_quiz.js"
+    },
+    {
+      "path": "js/codemind_regex_diff.js",
+      "kind": "source-js",
+      "name": "codemind_regex_diff.js"
+    },
+    {
+      "path": "js/codemind_roadmap.js",
+      "kind": "source-js",
+      "name": "codemind_roadmap.js"
+    },
+    {
+      "path": "js/codemind_runner.js",
+      "kind": "source-js",
+      "name": "codemind_runner.js"
+    },
+    {
+      "path": "js/codemind_safety_handler.js",
+      "kind": "source-js",
+      "name": "codemind_safety_handler.js"
+    },
+    {
+      "path": "js/codemind_shortcuts.js",
+      "kind": "source-js",
+      "name": "codemind_shortcuts.js"
+    },
+    {
+      "path": "js/codemind_site_handler.js",
+      "kind": "source-js",
+      "name": "codemind_site_handler.js"
+    },
+    {
+      "path": "js/codemind_sql_leetcode.js",
+      "kind": "source-js",
+      "name": "codemind_sql_leetcode.js"
+    },
+    {
+      "path": "js/codemind_state.js",
+      "kind": "source-js",
+      "name": "codemind_state.js"
+    },
+    {
+      "path": "js/codemind_terminal.js",
+      "kind": "source-js",
+      "name": "codemind_terminal.js"
+    },
+    {
+      "path": "js/codemind_ui.js",
+      "kind": "source-js",
+      "name": "codemind_ui.js"
+    },
+    {
+      "path": "js/codemind_vault.js",
+      "kind": "source-js",
+      "name": "codemind_vault.js"
+    },
+    {
+      "path": "markdown.ts",
+      "kind": "source-ts",
+      "name": "markdown.ts"
+    },
+    {
+      "path": "storage.ts",
+      "kind": "source-ts",
+      "name": "storage.ts"
+    },
+    {
+      "path": "useExecutor.ts",
+      "kind": "source-ts",
+      "name": "useExecutor.ts"
+    },
+    {
+      "path": "useGemini.ts",
+      "kind": "source-ts",
+      "name": "useGemini.ts"
+    },
+    {
+      "path": "useSettings.ts",
+      "kind": "source-ts",
+      "name": "useSettings.ts"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND ANIMATIONS — codemind_animations.css
+   All keyframes, transition utilities, and animation helper classes
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── KEYFRAMES LIBRARY ── */
+
+@keyframes cm-fade-in      { from { opacity:0; } to { opacity:1; } }
+@keyframes cm-fade-out     { from { opacity:1; } to { opacity:0; } }
+@keyframes cm-slide-up     { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes cm-slide-down   { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes cm-slide-left   { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
+@keyframes cm-slide-right  { from { opacity:0; transform:translateX(-14px); } to { opacity:1; transform:translateX(0); } }
+@keyframes cm-scale-in     { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
+@keyframes cm-scale-out    { from { opacity:1; transform:scale(1); } to { opacity:0; transform:scale(.92); } }
+
+@keyframes cm-spin         { to { transform: rotate(360deg); } }
+@keyframes cm-spin-slow    { to { transform: rotate(360deg); } }
+@keyframes cm-bounce       { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+@keyframes cm-pulse-soft   { 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+@keyframes cm-pulse-fast   { 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
+@keyframes cm-ping         { 0%{ transform:scale(1); opacity:.9; } 100%{ transform:scale(1.8); opacity:0; } }
+
+@keyframes cm-float        { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+@keyframes cm-float-slow   { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
+
+@keyframes cm-glow-cyan    { 0%,100%{ box-shadow:0 0 8px rgba(0,229,255,.3); } 50%{ box-shadow:0 0 24px rgba(0,229,255,.7); } }
+@keyframes cm-glow-violet  { 0%,100%{ box-shadow:0 0 8px rgba(124,58,237,.3); } 50%{ box-shadow:0 0 24px rgba(124,58,237,.7); } }
+@keyframes cm-glow-mint    { 0%,100%{ box-shadow:0 0 8px rgba(16,185,129,.3); } 50%{ box-shadow:0 0 24px rgba(16,185,129,.7); } }
+
+@keyframes cm-shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+
+@keyframes cm-ticker {
+  0%   { transform:translateX(0); }
+  100% { transform:translateX(-50%); }
+}
+
+@keyframes cm-shake {
+  0%,100% { transform:translateX(0); }
+  20%     { transform:translateX(-4px); }
+  40%     { transform:translateX(4px); }
+  60%     { transform:translateX(-3px); }
+  80%     { transform:translateX(3px); }
+}
+
+@keyframes cm-typewriter-blink {
+  0%,100% { opacity:1; } 50% { opacity:0; }
+}
+
+@keyframes cm-ripple {
+  to { transform:scale(2.5); opacity:0; }
+}
+
+/* ── UTILITY ANIMATION CLASSES ── */
+.cm-anim-fade-in       { animation: cm-fade-in     .25s ease both; }
+.cm-anim-slide-up      { animation: cm-slide-up    .28s cubic-bezier(.4,0,.2,1) both; }
+.cm-anim-slide-down    { animation: cm-slide-down  .28s cubic-bezier(.4,0,.2,1) both; }
+.cm-anim-slide-left    { animation: cm-slide-left  .28s cubic-bezier(.4,0,.2,1) both; }
+.cm-anim-scale-in      { animation: cm-scale-in    .22s cubic-bezier(.4,0,.2,1) both; }
+.cm-anim-spin          { animation: cm-spin         .6s linear infinite; }
+.cm-anim-spin-slow     { animation: cm-spin-slow    2s  linear infinite; }
+.cm-anim-pulse         { animation: cm-pulse-soft   2s  ease-in-out infinite; }
+.cm-anim-pulse-fast    { animation: cm-pulse-fast   .8s ease-in-out infinite; }
+.cm-anim-float         { animation: cm-float        3s  ease-in-out infinite; }
+.cm-anim-float-slow    { animation: cm-float-slow   5s  ease-in-out infinite; }
+.cm-anim-bounce        { animation: cm-bounce       1s  ease-in-out infinite; }
+.cm-anim-glow-cyan     { animation: cm-glow-cyan    2s  ease-in-out infinite; }
+.cm-anim-glow-violet   { animation: cm-glow-violet  2s  ease-in-out infinite; }
+.cm-anim-shake         { animation: cm-shake        .4s ease both; }
+
+/* ── SHIMMER (skeleton loader pattern) ── */
+.cm-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg2) 0%,
+    var(--bg3) 40%,
+    rgba(0,229,255,.08) 50%,
+    var(--bg3) 60%,
+    var(--bg2) 100%
+  );
+  background-size: 200% auto;
+  animation: cm-shimmer 1.6s linear infinite;
+}
+
+/* ── DELAY UTILITIES ── */
+.cm-delay-100 { animation-delay: .1s; }
+.cm-delay-200 { animation-delay: .2s; }
+.cm-delay-300 { animation-delay: .3s; }
+.cm-delay-500 { animation-delay: .5s; }
+
+/* ── TRANSITION UTILITIES ── */
+.cm-transition     { transition: all .2s ease; }
+.cm-transition-fast{ transition: all .1s ease; }
+.cm-transition-slow{ transition: all .4s ease; }
+.cm-no-transition  { transition: none !important; }
+
+/* ── ENTRANCE STAGGER (nth-child delays for list items) ── */
+.cm-stagger > *:nth-child(1) { animation-delay: .04s; }
+.cm-stagger > *:nth-child(2) { animation-delay: .08s; }
+.cm-stagger > *:nth-child(3) { animation-delay: .12s; }
+.cm-stagger > *:nth-child(4) { animation-delay: .16s; }
+.cm-stagger > *:nth-child(5) { animation-delay: .20s; }
+.cm-stagger > *:nth-child(6) { animation-delay: .24s; }
+
+/* ── HOVER LIFT ── */
+.cm-hover-lift { transition: transform .2s, box-shadow .2s; }
+.cm-hover-lift:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.35); }
+
+/* ── PING BADGE (live indicator) ── */
+.cm-live-ping {
+  position: relative;
+  display: inline-flex;
+}
+.cm-live-ping::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: cm-ping 1.4s ease-out infinite;
+}
+
+/* ── REDUCED MOTION OVERRIDE ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

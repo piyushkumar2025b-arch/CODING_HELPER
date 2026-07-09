@@ -1,0 +1,37 @@
+.cm-actions-launcher {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 2147483646;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.cm-actions-button {
+  border: 1px solid var(--site-border);
+  background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  color: var(--site-text);
+  border-radius: 999px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: var(--site-shadow);
+}
+
+.cm-action-popover {
+  min-width: 240px;
+  max-width: 320px;
+  padding: 10px;
+}
+
+.cm-action-item {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--site-border);
+  background: rgba(255,255,255,.03);
+  color: var(--site-text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: left;
+  margin-top: 8px;
+}

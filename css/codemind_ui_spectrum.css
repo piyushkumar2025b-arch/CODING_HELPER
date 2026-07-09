@@ -1,0 +1,16 @@
+.cm-spectrum-title {
+  background: linear-gradient(90deg, #ffffff, #bdefff 28%, #89f7ff 48%, #d7b3ff 72%, #ffffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cm-spectrum-chip {
+  border: 1px solid rgba(0,229,255,.14);
+  background: linear-gradient(135deg, rgba(0,229,255,.10), rgba(124,58,237,.12));
+}
+
+.cm-spectrum-chip.active {
+  background: linear-gradient(135deg, rgba(0,229,255,.20), rgba(124,58,237,.24));
+  box-shadow: 0 0 0 1px rgba(0,229,255,.18), 0 12px 28px rgba(0,229,255,.10);
+}

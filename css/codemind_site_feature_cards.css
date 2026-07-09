@@ -1,0 +1,33 @@
+.cm-feature-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+}
+
+.cm-feature-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -50% auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--site-accent) 24%, transparent), transparent 65%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.cm-feature-card .cm-feature-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.cm-feature-card .cm-mini-btn {
+  border: 1px solid var(--site-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--site-text);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+}

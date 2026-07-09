@@ -1,0 +1,12 @@
+.cm-transition-fast { transition: all 160ms ease; }
+.cm-transition-medium { transition: all 240ms ease; }
+.cm-transition-slow { transition: all 360ms ease; }
+
+.cm-fade-up {
+  animation: cmFadeUp 260ms ease both;
+}
+
+@keyframes cmFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

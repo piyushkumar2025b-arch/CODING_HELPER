@@ -1,0 +1,171 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   CODEMIND UI ADDITIONS — 12 Injected Features
+   Covers: Particle Canvas, Command Palette, FAB Ring, Live Clock,
+   Focus Mode, Toast Stack, Shortcut HUD, Complexity Bar,
+   Minimap, Activity Heatmap, Syntax Error Badge, Welcome Toast
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. AMBIENT PARTICLE CANVAS ── */
+/* Canvas stays behind everything */
+#cm-particle-canvas {
+  z-index: 0 !important;
+}
+
+/* ── 2. COMMAND PALETTE (Ctrl+K) ── */
+/* Command palette results */
+.cm-cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 18px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #c8c8e0;
+  transition: background .12s;
+}
+.cm-cmd-item:hover,
+.cm-cmd-item.cm-cmd-active {
+  background: #00e5ff0f;
+  color: #00e5ff;
+}
+.cm-cmd-item .cm-cmd-icon {
+  font-size: 16px;
+  width: 22px;
+  text-align: center;
+}
+.cm-cmd-item .cm-cmd-cat {
+  font-size: 10px;
+  color: #444;
+  margin-left: auto;
+}
+/* Scrollbar for cmd palette */
+#cm-cmd-results::-webkit-scrollbar         { width: 4px; }
+#cm-cmd-results::-webkit-scrollbar-track   { background: #0d0d18; }
+#cm-cmd-results::-webkit-scrollbar-thumb   { background: #333; border-radius: 2px; }
+
+/* ── 3. FLOATING FAB RING ── */
+.cm-fab-btn {
+  background: #1a1a2e;
+  border: 1px solid #ffffff1a;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 12px;
+  color: #c8c8e0;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  box-shadow: 0 2px 12px #0006;
+  transition: all .15s;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cm-fab-btn:hover {
+  background: #222240;
+  border-color: #00e5ff55;
+  color: #00e5ff;
+  box-shadow: 0 0 16px #00e5ff22;
+  transform: translateX(-2px);
+}
+
+/* ── 4. LIVE CLOCK + SESSION TIMER ── */
+/* (Clock badge uses inline positioning; no extra class-level styles needed) */
+
+/* ── 5. FOCUS MODE TOGGLE ── */
+body.cm-focus-mode .sidebar {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity .3s;
+}
+body.cm-focus-mode #cm-heatmap-wrap  { opacity: 0; pointer-events: none; }
+body.cm-focus-mode #cm-clock-badge   { opacity: 0; }
+body.cm-focus-mode #cm-complexity-bar { opacity: 0; }
+#cm-focus-pill:hover {
+  color: #00e5ff;
+  border-color: #00e5ff44;
+  box-shadow: 0 0 16px #00e5ff22;
+}
+
+/* ── 6. TOAST NOTIFICATION STACK ── */
+.cm-toast {
+  background: #13131e;
+  border: 1px solid #ffffff15;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #e8e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 4px 24px #0008;
+  animation: cm-toast-in .2s ease;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+  border-left: 3px solid #00e5ff;
+}
+.cm-toast.cm-toast-warn { border-left-color: #f59e0b; }
+.cm-toast.cm-toast-err  { border-left-color: #ef4444; }
+.cm-toast.cm-toast-ok   { border-left-color: #10b981; }
+@keyframes cm-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── 7. KEYBOARD SHORTCUT HUD ── */
+.cm-shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #ffffff06;
+}
+.cm-shortcut-row .cm-kbd {
+  background: #1e1e30;
+  border: 1px solid #333;
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: #00e5ff;
+  white-space: nowrap;
+}
+.cm-shortcut-row .cm-sdesc {
+  font-size: 11px;
+  color: #888;
+}
+
+/* ── 8. LIVE CODE COMPLEXITY BAR ── */
+@keyframes cm-complex-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+#cm-complexity-fill.cm-complex-high {
+  animation: cm-complex-pulse 1.2s infinite;
+}
+
+/* ── 9. MINIMAP PANEL ── */
+#cm-minimap-toggle:hover {
+  color: #00e5ff;
+  border-color: #00e5ff44;
+}
+
+/* ── 10. ACTIVITY HEATMAP ── */
+.cm-heat-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: #1a1a2e;
+  transition: background .3s;
+  cursor: default;
+}
+.cm-heat-cell.h1 { background: #1a3040; }
+.cm-heat-cell.h2 { background: #00618f; }
+.cm-heat-cell.h3 { background: #00a8d4; }
+.cm-heat-cell.h4 { background: #00e5ff; }
+
+/* ── 11. LIVE SYNTAX ERROR BADGE ── */
+/* (Badge uses inline positioning; visible when populated via JS) */
+
+/* ── 12. WELCOME TOAST ── */
+/* (Welcome toast re-uses .cm-toast styles above) */

@@ -1,0 +1,14 @@
+.cm-theme-float button.active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--site-accent) 24%, transparent), color-mix(in srgb, var(--site-accent-2) 18%, transparent));
+  border-color: color-mix(in srgb, var(--site-accent) 40%, white);
+}
+
+.cm-theme-float button:hover {
+  transform: translateY(-1px);
+}
+
+.cm-theme-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

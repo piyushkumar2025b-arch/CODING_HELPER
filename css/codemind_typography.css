@@ -1,0 +1,128 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND TYPOGRAPHY — codemind_typography.css
+   Font scales, heading styles, code text, prose, labels
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── FONT SIZE SCALE ── */
+:root {
+  --fs-2xs: 9px;
+  --fs-xs:  11px;
+  --fs-sm:  12px;
+  --fs-base: 13px;
+  --fs-md:  14px;
+  --fs-lg:  16px;
+  --fs-xl:  18px;
+  --fs-2xl: 22px;
+  --fs-3xl: 28px;
+
+  --ff-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --ff-ui:   'Syne', 'Inter', system-ui, sans-serif;
+
+  --fw-light:  300;
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-bold:   700;
+  --fw-black:  800;
+
+  --lh-tight:  1.2;
+  --lh-base:   1.5;
+  --lh-loose:  1.8;
+
+  --ls-tight:  -.04em;
+  --ls-base:   -.01em;
+  --ls-wide:   .06em;
+  --ls-widest: .12em;
+}
+
+/* ── BASE BODY TEXT ── */
+body {
+  font-family: var(--ff-ui);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  letter-spacing: var(--ls-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── HEADINGS ── */
+.cm-h1 { font-size: var(--fs-3xl); font-weight: var(--fw-black); letter-spacing: var(--ls-tight); line-height: var(--lh-tight); }
+.cm-h2 { font-size: var(--fs-2xl); font-weight: var(--fw-bold);  letter-spacing: var(--ls-tight); line-height: var(--lh-tight); }
+.cm-h3 { font-size: var(--fs-xl);  font-weight: var(--fw-bold);  letter-spacing: var(--ls-base); }
+.cm-h4 { font-size: var(--fs-lg);  font-weight: var(--fw-medium); }
+.cm-h5 { font-size: var(--fs-md);  font-weight: var(--fw-medium); }
+
+/* ── CODE / MONO ── */
+code,
+pre,
+kbd,
+samp,
+.cm-mono,
+.cm-code-text,
+#codeEditor,
+.output-box,
+.terminal-output {
+  font-family: var(--ff-mono);
+  font-size: var(--fs-sm);
+  font-variant-ligatures: contextual;
+}
+
+pre { line-height: 1.6; }
+
+/* Inline code pill */
+code:not(pre > code) {
+  background: rgba(0, 229, 255, .08);
+  border: 1px solid rgba(0, 229, 255, .15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+/* ── LABELS & CAPS ── */
+.cm-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-widest);
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--ff-mono);
+}
+
+.cm-sublabel {
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .7;
+}
+
+/* ── PROSE / AI OUTPUT ── */
+.ai-content,
+.cm-prose {
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  color: var(--text);
+}
+.ai-content h1, .cm-prose h1 { font-size: var(--fs-2xl); font-weight: var(--fw-bold); margin: 1em 0 .4em; }
+.ai-content h2, .cm-prose h2 { font-size: var(--fs-xl);  font-weight: var(--fw-bold); margin: .8em 0 .3em; }
+.ai-content h3, .cm-prose h3 { font-size: var(--fs-lg);  font-weight: var(--fw-medium); margin: .6em 0 .25em; }
+.ai-content p,  .cm-prose p  { margin-bottom: .6em; }
+.ai-content li, .cm-prose li { margin-bottom: .25em; }
+.ai-content strong            { color: var(--accent); font-weight: var(--fw-bold); }
+.ai-content em                { color: var(--accent2); font-style: italic; }
+
+/* ── TRUNCATION UTILS ── */
+.cm-truncate       { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cm-clamp-2        { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cm-break-all      { word-break: break-all; }
+.cm-break-word     { overflow-wrap: break-word; }
+.cm-no-select      { user-select: none; }
+
+/* ── ACCENT TEXT COLORS ── */
+.cm-text-accent  { color: var(--accent); }
+.cm-text-accent2 { color: var(--accent2); }
+.cm-text-accent3 { color: var(--accent3); }
+.cm-text-muted   { color: var(--muted); }
+.cm-text-warn    { color: var(--warn); }
+.cm-text-danger  { color: var(--danger); }
+.cm-text-success { color: var(--accent3); }

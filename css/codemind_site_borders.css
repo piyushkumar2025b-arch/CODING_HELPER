@@ -1,0 +1,4 @@
+.cm-border-soft { border: 1px solid var(--site-border) !important; }
+.cm-border-glow { border: 1px solid color-mix(in srgb, var(--site-accent) 24%, var(--site-border)); }
+.cm-border-rounded { border-radius: 20px; }
+.cm-border-pill { border-radius: 999px; }

@@ -1,0 +1,283 @@
+/* === CodeMind: codemind_ultra_polish.css ===
+   Extracted from inline <style> block 12
+*/
+
+/* Ultra-insane additive layer.
+   Purely ornamental: glow, depth, motion, and visual richness only. */
+
+:root {
+  --cm-ultra-aura: rgba(0, 229, 255, 0.22);
+  --cm-ultra-aura-2: rgba(124, 58, 237, 0.18);
+  --cm-ultra-aura-3: rgba(245, 158, 11, 0.12);
+}
+
+@keyframes cmUltraFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.005); }
+}
+
+@keyframes cmUltraGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(0,229,255,.10),
+      0 0 24px rgba(0,229,255,.08),
+      inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(124,58,237,.14),
+      0 0 36px rgba(0,229,255,.16),
+      0 0 64px rgba(124,58,237,.10),
+      inset 0 1px 0 rgba(255,255,255,.07);
+  }
+}
+
+@keyframes cmScanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 18px; }
+}
+
+body::after {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(0,229,255,.05), transparent 35%, rgba(124,58,237,.03));
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  background-repeat: repeat, repeat, no-repeat;
+  animation: cmScanline 18s linear infinite;
+}
+
+.logo-icon,
+.api-badge,
+.tab.active,
+.mode-btn.active,
+.opt-btn.active,
+.plat-tag.active-lc,
+.plat-tag.active-cf,
+.plat-tag.active-gen,
+.docs-source-btn.active,
+.flag-btn.active,
+.vsc-tab.active,
+.btn-primary,
+.btn-run,
+.tbtn.run-btn,
+.terminal-btn-run,
+.quiz-card,
+.flashcard,
+.weather-card,
+.news-card,
+.vault-file-card,
+.gh-repo-card,
+.caniuse-result,
+.quote-card,
+.joke-card,
+.roadmap-phase,
+.iv-qa-card,
+.dt-card,
+.docs-result-card,
+.npm-pkg-card {
+  animation: cmUltraGlow 8s ease-in-out infinite;
+}
+
+.logo-icon,
+.vsc-term-icon,
+.empty-icon,
+.weather-icon,
+.browser-icon {
+  animation: cmUltraFloat 5.5s ease-in-out infinite;
+}
+
+.terminal-pane.active::before,
+.panel.active::before {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0,229,255,.08), transparent 22%),
+    radial-gradient(circle at 80% 18%, rgba(124,58,237,.06), transparent 26%),
+    linear-gradient(135deg, rgba(0,229,255,.03), transparent 40%, rgba(124,58,237,.03));
+}
+
+.terminal-output-content,
+.output-box,
+.regex-result-box,
+.docs-result,
+.npm-result,
+.weather-card,
+.news-card,
+.vault-file-card,
+.npm-pkg-card,
+.gh-repo-card,
+.caniuse-result,
+.quote-card,
+.joke-card,
+.quiz-card,
+.flashcard,
+.roadmap-phase,
+.iv-qa-card,
+.dt-card {
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+.terminal-output-content:hover,
+.output-box:hover,
+.regex-result-box:hover,
+.docs-result:hover,
+.npm-result:hover,
+.weather-card:hover,
+.news-card:hover,
+.vault-file-card:hover,
+.npm-pkg-card:hover,
+.gh-repo-card:hover,
+.caniuse-result:hover,
+.quote-card:hover,
+.joke-card:hover,
+.quiz-card:hover,
+.flashcard:hover,
+.roadmap-phase:hover,
+.iv-qa-card:hover,
+.dt-card:hover,
+.docs-result-card:hover {
+  border-color: rgba(0,229,255,.28);
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.26),
+    0 0 0 1px rgba(0,229,255,.10),
+    0 0 40px rgba(0,229,255,.06);
+}
+
+.api-badge,
+.btn,
+.tbtn,
+.opt-btn,
+.plat-tag,
+.docs-source-btn,
+.flag-btn,
+.vsc-ctrl-btn,
+.terminal-btn,
+.preview-close,
+.vsc-add-tab-btn,
+.vault-btn,
+.quiz-opt,
+.roadmap-topic,
+.cs-item,
+.dt-btn,
+.vsc-term-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.api-badge::before,
+.btn::before,
+.tbtn::before,
+.opt-btn::before,
+.plat-tag::before,
+.docs-source-btn::before,
+.flag-btn::before,
+.vsc-ctrl-btn::before,
+.terminal-btn::before,
+.preview-close::before,
+.vsc-add-tab-btn::before,
+.vault-btn::before,
+.quiz-opt::before,
+.roadmap-topic::before,
+.cs-item::before,
+.dt-btn::before,
+.vsc-term-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.08) 50%, transparent 100%);
+  transform: translateX(-140%);
+  transition: transform .5s ease;
+  pointer-events: none;
+}
+
+.api-badge:hover::before,
+.btn:hover::before,
+.tbtn:hover::before,
+.opt-btn:hover::before,
+.plat-tag:hover::before,
+.docs-source-btn:hover::before,
+.flag-btn:hover::before,
+.vsc-ctrl-btn:hover::before,
+.terminal-btn:hover::before,
+.preview-close:hover::before,
+.vsc-add-tab-btn:hover::before,
+.vault-btn:hover::before,
+.quiz-opt:hover::before,
+.roadmap-topic:hover::before,
+.cs-item:hover::before,
+.dt-btn:hover::before,
+.vsc-term-item:hover::before {
+  transform: translateX(140%);
+}
+
+.terminal-msg.muted,
+.empty-state,
+.empty-text,
+.modal p,
+.docs-result-desc,
+.weather-desc,
+.gh-repo-desc,
+.caniuse-desc,
+.news-meta-item,
+.vault-file-size,
+.vault-file-date,
+.gen-img-meta {
+  text-shadow: 0 0 10px rgba(255,255,255,.02);
+}
+
+.terminal-btn-run,
+.btn-primary,
+.btn-run,
+.tbtn.run-btn,
+.terminal-theme-select:focus,
+.terminal-lang-selector:focus,
+.docs-search-row input:focus,
+.regex-input-row input:focus,
+.npm-input-row input:focus,
+.so-search-row input:focus,
+.dt-input:focus,
+.iv-select:focus {
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,.18),
+    0 0 0 5px rgba(0,229,255,.08);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .api-badge,
+  .btn,
+  .tbtn,
+  .opt-btn,
+  .plat-tag,
+  .docs-source-btn,
+  .flag-btn,
+  .vsc-ctrl-btn,
+  .terminal-btn,
+  .preview-close,
+  .vsc-add-tab-btn,
+  .vault-btn,
+  .quiz-opt,
+  .roadmap-topic,
+  .cs-item,
+  .dt-btn,
+  .vsc-term-item,
+  .quiz-card,
+  .flashcard,
+  .weather-card,
+  .news-card,
+  .vault-file-card,
+  .gh-repo-card,
+  .caniuse-result,
+  .quote-card,
+  .joke-card,
+  .roadmap-phase,
+  .iv-qa-card,
+  .dt-card,
+  .docs-result-card,
+  .npm-pkg-card {
+    transition:
+      transform 150ms ease,
+      box-shadow 150ms ease,
+      border-color 150ms ease,
+      background-color 150ms ease,
+      color 150ms ease;
+  }
+}

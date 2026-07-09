@@ -1,0 +1,72 @@
+/* === CodeMind: codemind_surface_polish.css ===
+   Extracted from inline <style> block 5
+*/
+
+/* Extra surface polish - additive only */
+
+:root {
+  --cm-surface-1: rgba(17, 17, 26, 0.72);
+  --cm-surface-2: rgba(24, 24, 31, 0.82);
+  --cm-surface-3: rgba(37, 37, 46, 0.88);
+}
+
+body::before {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0,229,255,0.10), transparent 24%),
+    radial-gradient(circle at 80% 10%, rgba(124,58,237,0.10), transparent 20%),
+    radial-gradient(circle at 70% 80%, rgba(16,185,129,0.08), transparent 18%);
+}
+
+.sidebar,
+.vsc-terminal-tabs-sidebar,
+.terminal-output-content,
+.terminal-input-bar,
+.vsc-terminal-header,
+.vsc-terminal-statusbar,
+.cm_hub_header,
+#cm_atp_header,
+.cm_atp_key_row,
+.cm_atp_footer_btn,
+.cm_row,
+.cm_key_block,
+.cm_hub_row,
+.cm_hub_footer,
+.panel,
+.tab,
+.question-panel,
+.quiz-panel,
+.docs-panel,
+.sql-panel,
+.tool-panel,
+.dt-card,
+.card,
+.flashcard,
+.panel-card,
+.tool-card {
+  background-color: var(--cm-surface-1);
+}
+
+.tab.active,
+.mode-btn.active,
+.opt-btn.active,
+.plat-tag.active-lc,
+.plat-tag.active-cf,
+.plat-tag.active-gen {
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+textarea,
+input,
+select,
+button {
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+textarea:focus,
+input:focus,
+select:focus,
+button:focus {
+  box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+}

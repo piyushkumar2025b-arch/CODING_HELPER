@@ -1,0 +1,16 @@
+.cm-motion-soft {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, opacity 180ms ease;
+}
+
+.cm-motion-soft:hover {
+  transform: translateY(-2px);
+}
+
+.cm-motion-stagger > * {
+  animation: cmStaggerIn 280ms ease both;
+}
+
+@keyframes cmStaggerIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,142 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND THEME SYSTEM — codemind_themes.css
+   6 themes: midnight (default), forest, ocean, ember, violet, mono
+   Apply via: <html data-theme="forest"> or JS:
+     document.documentElement.dataset.theme = 'ocean';
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── MIDNIGHT (default) ── */
+:root,
+[data-theme="midnight"] {
+  --bg:        #0a0a0f;
+  --bg2:       #111118;
+  --bg3:       #18181f;
+  --border:    #2a2a3a;
+  --accent:    #00e5ff;
+  --accent2:   #7c3aed;
+  --accent3:   #10b981;
+  --warn:      #f59e0b;
+  --danger:    #ef4444;
+  --text:      #e8e8f0;
+  --muted:     #6b6b80;
+  --card:      #14141c;
+  /* extras */
+  --glow-a:    rgba(0, 229, 255, .22);
+  --glow-b:    rgba(124, 58, 237, .18);
+  --sidebar-bg:#0d0d16;
+  --header-bg: rgba(10,10,15,.96);
+}
+
+/* ── FOREST ── */
+[data-theme="forest"] {
+  --bg:        #060d08;
+  --bg2:       #0d1810;
+  --bg3:       #142018;
+  --border:    #1f3324;
+  --accent:    #22c55e;
+  --accent2:   #84cc16;
+  --accent3:   #06b6d4;
+  --warn:      #eab308;
+  --danger:    #f87171;
+  --text:      #e2f0e6;
+  --muted:     #5a7a62;
+  --card:      #0e1912;
+  --glow-a:    rgba(34, 197, 94, .22);
+  --glow-b:    rgba(132, 204, 22, .14);
+  --sidebar-bg:#09110b;
+  --header-bg: rgba(6,13,8,.96);
+}
+
+/* ── OCEAN ── */
+[data-theme="ocean"] {
+  --bg:        #03080f;
+  --bg2:       #081420;
+  --bg3:       #0e1e30;
+  --border:    #1a2f48;
+  --accent:    #38bdf8;
+  --accent2:   #818cf8;
+  --accent3:   #34d399;
+  --warn:      #fb923c;
+  --danger:    #f87171;
+  --text:      #e0f2fe;
+  --muted:     #4a6a84;
+  --card:      #070f1c;
+  --glow-a:    rgba(56, 189, 248, .22);
+  --glow-b:    rgba(129, 140, 248, .16);
+  --sidebar-bg:#050b16;
+  --header-bg: rgba(3,8,15,.96);
+}
+
+/* ── EMBER ── */
+[data-theme="ember"] {
+  --bg:        #0f0802;
+  --bg2:       #1a1008;
+  --bg3:       #221508;
+  --border:    #3a2510;
+  --accent:    #f97316;
+  --accent2:   #ef4444;
+  --accent3:   #facc15;
+  --warn:      #fbbf24;
+  --danger:    #dc2626;
+  --text:      #fef3e2;
+  --muted:     #7a5a36;
+  --card:      #120a04;
+  --glow-a:    rgba(249, 115, 22, .24);
+  --glow-b:    rgba(239, 68, 68, .16);
+  --sidebar-bg:#0c0704;
+  --header-bg: rgba(15,8,2,.96);
+}
+
+/* ── VIOLET ── */
+[data-theme="violet"] {
+  --bg:        #07040f;
+  --bg2:       #100a1e;
+  --bg3:       #18102c;
+  --border:    #2e1f48;
+  --accent:    #a78bfa;
+  --accent2:   #e879f9;
+  --accent3:   #67e8f9;
+  --warn:      #fbbf24;
+  --danger:    #f87171;
+  --text:      #ede9fe;
+  --muted:     #6b5a8a;
+  --card:      #0d0818;
+  --glow-a:    rgba(167, 139, 250, .22);
+  --glow-b:    rgba(232, 121, 249, .16);
+  --sidebar-bg:#080512;
+  --header-bg: rgba(7,4,15,.96);
+}
+
+/* ── MONO ── */
+[data-theme="mono"] {
+  --bg:        #080808;
+  --bg2:       #111111;
+  --bg3:       #1a1a1a;
+  --border:    #2e2e2e;
+  --accent:    #f4f4f4;
+  --accent2:   #aaaaaa;
+  --accent3:   #888888;
+  --warn:      #d4a800;
+  --danger:    #c94040;
+  --text:      #f0f0f0;
+  --muted:     #606060;
+  --card:      #121212;
+  --glow-a:    rgba(244, 244, 244, .14);
+  --glow-b:    rgba(170, 170, 170, .10);
+  --sidebar-bg:#0a0a0a;
+  --header-bg: rgba(8,8,8,.97);
+}
+
+/* ── THEME-AWARE OVERRIDES (applied to all themes) ── */
+header            { background: var(--header-bg) !important; }
+.sidebar          { background: var(--sidebar-bg) !important; }
+body              { background: var(--bg); color: var(--text); }
+.card, .panel     { background: var(--card); }
+
+/* Accent glow radials update per theme */
+#app {
+  background:
+    radial-gradient(circle at 12% 8%, var(--glow-a), transparent 28%),
+    radial-gradient(circle at 82% 18%, var(--glow-b), transparent 32%),
+    var(--bg) !important;
+}

@@ -1,0 +1,70 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND SCROLLBARS — codemind_scrollbars.css
+   Thin neon scrollbars for all scrollable panels
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── GLOBAL THIN SCROLLBAR ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Webkit (Chrome, Edge, Safari) */
+::-webkit-scrollbar            { width: 5px; height: 5px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover{ background: var(--accent); }
+::-webkit-scrollbar-corner     { background: transparent; }
+
+/* ── NEON SCROLLBAR (opt-in class) ── */
+.cm-scroll-neon {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+.cm-scroll-neon::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+/* ── ACCENT2 SCROLLBAR ── */
+.cm-scroll-violet {
+  scrollbar-color: var(--accent2) transparent;
+}
+.cm-scroll-violet::-webkit-scrollbar-thumb { background: var(--accent2); }
+
+/* ── HIDDEN SCROLLBAR (scrolls but no bar) ── */
+.cm-scroll-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cm-scroll-hidden::-webkit-scrollbar { display: none; }
+
+/* ── OVERLAY SCROLLBAR (ultra thin, only on hover) ── */
+.cm-scroll-overlay {
+  overflow: overlay;
+  scrollbar-gutter: stable both-edges;
+}
+
+/* ── SPECIFIC PANEL SCROLLBARS ── */
+.question-panel::-webkit-scrollbar,
+.response-panel::-webkit-scrollbar,
+.ai-content::-webkit-scrollbar,
+.output-box::-webkit-scrollbar   { width: 4px; }
+
+.question-panel::-webkit-scrollbar-thumb,
+.response-panel::-webkit-scrollbar-thumb,
+.output-box::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, .3);
+  border-radius: 99px;
+}
+
+.terminal-output::-webkit-scrollbar       { width: 3px; height: 3px; }
+.terminal-output::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, .4); }
+
+/* modal scroll */
+.modal::-webkit-scrollbar       { width: 4px; }
+.modal::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* sidebar */
+.sidebar::-webkit-scrollbar       { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); }

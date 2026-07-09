@@ -1,0 +1,148 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIND LOADING STATES — codemind_loading.css
+   Spinners, progress bars, skeleton screens, placeholders
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── SPINNERS ── */
+.cm-spinner {
+  display: inline-block;
+  width: 20px; height: 20px;
+  border: 2px solid rgba(0,229,255,.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: cm-spin .7s linear infinite;
+  flex-shrink: 0;
+}
+.cm-spinner-sm  { width: 14px; height: 14px; border-width: 2px; }
+.cm-spinner-lg  { width: 32px; height: 32px; border-width: 3px; }
+.cm-spinner-xl  { width: 48px; height: 48px; border-width: 4px; }
+
+/* Dual-ring variant */
+.cm-spinner-dual {
+  width: 24px; height: 24px;
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cm-spinner-dual::before,
+.cm-spinner-dual::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.cm-spinner-dual::before {
+  inset: 0;
+  border-top-color: var(--accent);
+  animation: cm-spin .7s linear infinite;
+}
+.cm-spinner-dual::after {
+  inset: 4px;
+  border-top-color: var(--accent2);
+  animation: cm-spin 1s linear infinite reverse;
+}
+
+/* Dots spinner */
+.cm-spinner-dots {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+.cm-spinner-dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: cm-bounce .9s ease-in-out infinite;
+}
+.cm-spinner-dots span:nth-child(2) { animation-delay: .15s; background: var(--accent2); }
+.cm-spinner-dots span:nth-child(3) { animation-delay: .30s; background: var(--accent3); }
+
+/* ── PROGRESS BAR ── */
+.cm-progress {
+  width: 100%;
+  height: 4px;
+  background: var(--bg3);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+.cm-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  transition: width .4s ease;
+  position: relative;
+  overflow: hidden;
+}
+.cm-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 40px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.4));
+  animation: cm-shimmer 1.4s linear infinite;
+}
+
+.cm-progress-sm { height: 2px; }
+.cm-progress-lg { height: 8px; border-radius: 4px; }
+.cm-progress-xl { height: 12px; border-radius: 6px; }
+
+/* Indeterminate */
+.cm-progress-indeterminate .cm-progress-fill {
+  width: 40% !important;
+  animation: cm-progress-slide 1.4s ease-in-out infinite;
+}
+@keyframes cm-progress-slide {
+  0%   { margin-left: -50%; }
+  100% { margin-left: 110%; }
+}
+
+/* ── SKELETON SCREENS ── */
+.cm-skeleton {
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%);
+  background-size: 200% 100%;
+  animation: cm-shimmer 1.6s linear infinite;
+  border-radius: 6px;
+}
+.cm-skeleton-text   { height: 12px; border-radius: 4px; margin-bottom: 8px; }
+.cm-skeleton-text:last-child { width: 70%; }
+.cm-skeleton-title  { height: 18px; border-radius: 5px; margin-bottom: 12px; }
+.cm-skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.cm-skeleton-btn    { height: 32px; width: 80px; border-radius: 8px; }
+.cm-skeleton-card   { height: 120px; border-radius: 14px; }
+.cm-skeleton-line   { height: 10px; border-radius: 3px; margin: 4px 0; }
+
+/* ── LOADING OVERLAY ── */
+.cm-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,15,.75);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border-radius: inherit;
+  animation: cm-fade-in .2s ease both;
+}
+.cm-loading-overlay .cm-loading-text {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── EMPTY STATE ── */
+.cm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  text-align: center;
+  color: var(--muted);
+}
+.cm-empty-icon   { font-size: 40px; opacity: .5; }
+.cm-empty-title  { font-size: 14px; font-weight: 600; color: var(--text); }
+.cm-empty-desc   { font-size: 12px; color: var(--muted); max-width: 280px; line-height: 1.5; }
