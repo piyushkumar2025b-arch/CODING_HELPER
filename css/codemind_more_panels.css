@@ -1,0 +1,306 @@
+/* Additional standardized panel/card styles moved out of the HTML bundle. */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .82);
+  backdrop-filter: blur(7px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn .2s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 26px;
+  width: 420px;
+  max-width: 90vw;
+}
+
+.modal h2 {
+  font-size: 19px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.modal p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  gap: 12px;
+  padding: 40px;
+}
+
+.empty-icon {
+  font-size: 44px;
+  opacity: .4;
+}
+
+.empty-text {
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.empty-text strong {
+  color: var(--text);
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.roadmap-panel,
+.interview-panel,
+.flashcard-panel,
+.quiz-panel,
+.devtools-panel,
+.npm-search-wrap,
+.cheatsheet-panel,
+.so-panel {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.docs-result-card,
+.weather-card,
+.news-card,
+.vault-file-card,
+.npm-pkg-card,
+.gh-repo-card,
+.caniuse-result,
+.quote-card,
+.joke-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  animation: fadeIn .25s ease;
+}
+
+.docs-result-card,
+.news-card,
+.vault-file-card,
+.gh-repo-card {
+  transition: border-color .15s;
+}
+
+.docs-result-card:hover,
+.news-card:hover,
+.vault-file-card:hover,
+.gh-repo-card:hover {
+  border-color: var(--accent2);
+}
+
+.weather-grid,
+.npm-pkg-stats,
+.gh-stats-grid,
+.browser-support-grid,
+.quiz-topic-grid,
+.cs-grid,
+.devtools-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.weather-grid {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+}
+
+.npm-pkg-stats {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+}
+
+.gh-stats-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.browser-support-grid {
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+}
+
+.quiz-topic-grid {
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+}
+
+.cs-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.devtools-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 900px) {
+  .devtools-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.weather-main,
+.npm-pkg-header,
+.gh-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weather-main {
+  gap: 16px;
+}
+
+.weather-icon {
+  font-size: 52px;
+  line-height: 1;
+}
+
+.weather-temp,
+.gh-stat-val,
+.quiz-score-big,
+.pomo-time {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.weather-temp {
+  font-size: 44px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.weather-city,
+.npm-pkg-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.news-card-title,
+.gh-repo-name,
+.docs-result-title,
+.caniuse-title,
+.quiz-q-text {
+  font-weight: 700;
+}
+
+.vault-progress {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .7);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vault-progress-inner {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 30px;
+  min-width: 260px;
+  text-align: center;
+}
+
+.vault-prog-bar-wrap,
+.pomo-progress,
+.quiz-prog-bar,
+.rm-prog-bar {
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vault-prog-bar-wrap,
+.pomo-progress,
+.quiz-prog-bar {
+  height: 4px;
+}
+
+.vault-prog-bar-fill,
+.pomo-bar,
+.quiz-prog-fill,
+.rm-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 4px;
+  transition: width .2s;
+}
+
+.docs-result-meta,
+.news-meta-item,
+.vault-file-size,
+.vault-file-date,
+.gen-img-meta,
+.npm-pkg-version,
+.npm-tag,
+.gh-repo-badge,
+.browser-name,
+.browser-version,
+.quiz-progress,
+.quiz-streak,
+.rm-prog-pct,
+.fc-counter,
+.fc-hint,
+.iv-tag,
+.so-result-meta,
+.so-tag {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.gen-img-result {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 600px;
+}
+
+.gen-img-result img {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.gen-img-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.weather-desc,
+.docs-result-desc,
+.gh-repo-desc,
+.caniuse-desc,
+.so-result-title,
+.quiz-explain,
+.fc-def {
+  line-height: 1.6;
+}

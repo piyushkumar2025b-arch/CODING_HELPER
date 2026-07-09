@@ -1,0 +1,94 @@
+/* Final additive API overlay layer.
+   Designed to intensify the API hub/tester and the newer API surfaces only. */
+
+:root {
+  --cm-api-glow-a: rgba(0, 229, 255, 0.16);
+  --cm-api-glow-b: rgba(124, 58, 237, 0.14);
+  --cm-api-glow-c: rgba(16, 185, 129, 0.10);
+}
+
+.api-badge,
+.cm_atp_row,
+.cm_atp_key_card,
+.cm_atp_banner,
+.cm_hub_panel,
+.cm_hub_row,
+.cm_row,
+.cm_key_block,
+.cm_hub_footer,
+.cm_atp_footer_btn,
+.cm_atp_key_btn {
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.04),
+    0 14px 32px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.api-badge:hover,
+.cm_atp_row:hover,
+.cm_hub_row:hover,
+.cm_row:hover,
+.cm_key_block:hover,
+.cm_atp_footer_btn:hover,
+.cm_atp_key_btn:hover {
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,.18),
+    0 0 24px rgba(0,229,255,.10),
+    0 14px 32px rgba(0,0,0,.26);
+}
+
+.api-badge,
+.cm_atp_row,
+.cm_atp_key_card,
+.cm_atp_banner,
+.cm_hub_panel,
+.cm_hub_row,
+.cm_row,
+.cm_key_block {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.05), transparent 40%),
+    radial-gradient(circle at top left, rgba(0,229,255,.04), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(124,58,237,.03), transparent 38%);
+}
+
+.cm_atp_row,
+.cm_hub_row,
+.cm_row {
+  border-color: rgba(148,163,184,.18);
+}
+
+.cm_atp_status_pass,
+.cm_hub_status_pass,
+.cm_status_pass {
+  text-shadow: 0 0 12px rgba(16,185,129,.20);
+}
+
+.cm_atp_status_fail,
+.cm_hub_status_fail,
+.cm_status_fail {
+  text-shadow: 0 0 12px rgba(239,68,68,.18);
+}
+
+.cm_atp_status_warn,
+.cm_hub_status_warn,
+.cm_status_warn {
+  text-shadow: 0 0 12px rgba(245,158,11,.18);
+}
+
+.cm_atp_banner,
+.cm_hub_panel {
+  border-color: rgba(0,229,255,.16);
+}
+
+.cm_atp_footer_btn.primary,
+.cm_atp_key_btn,
+.cm_hub_action,
+.cm_hub_chip {
+  background: linear-gradient(135deg, rgba(124,58,237,.14), rgba(0,229,255,.10));
+}
+
+.cm_hub_scrollbar::-webkit-scrollbar-thumb,
+.cm_hub_body::-webkit-scrollbar-thumb,
+.cm_atp_body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0,229,255,.55), rgba(124,58,237,.45));
+}

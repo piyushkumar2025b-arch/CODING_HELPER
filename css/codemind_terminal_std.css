@@ -1,0 +1,142 @@
+/* Standardized terminal styling layer.
+   Loaded last so it can override older inline rules cleanly. */
+
+:root {
+  --cm-terminal-bg: #11141b;
+  --cm-terminal-surface: rgba(24, 27, 36, 0.96);
+  --cm-terminal-surface-2: rgba(31, 35, 46, 0.96);
+  --cm-terminal-border: rgba(148, 163, 184, 0.16);
+  --cm-terminal-text: #e5e7eb;
+  --cm-terminal-muted: #94a3b8;
+  --cm-terminal-accent: #00e5ff;
+  --cm-terminal-accent-2: #7c3aed;
+  --cm-terminal-success: #10b981;
+  --cm-terminal-danger: #ef4444;
+}
+
+.terminal-panel,
+.terminal-container,
+.vsc-terminal-workspace,
+.terminal-pane,
+.terminal-editor-col,
+.terminal-output-col,
+.terminal-output-content,
+.terminal-editor-wrap,
+.terminal-split {
+  background: var(--cm-terminal-bg);
+}
+
+.terminal-panel {
+  border: 1px solid var(--cm-terminal-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.vsc-terminal-header,
+.terminal-header,
+.terminal-output-header,
+.terminal-input-bar,
+.vsc-terminal-statusbar {
+  background: var(--cm-terminal-surface);
+  border-color: var(--cm-terminal-border);
+}
+
+.vsc-tab,
+.vsc-ctrl-btn,
+.terminal-btn,
+.terminal-lang-selector,
+.terminal-theme-select {
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.vsc-tab:hover,
+.vsc-ctrl-btn:hover,
+.terminal-btn:hover {
+  transform: translateY(-1px);
+}
+
+.terminal-btn-run,
+.terminal-btn-clear,
+.terminal-btn-ghost {
+  border: 1px solid var(--cm-terminal-border);
+}
+
+.terminal-btn-run {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.9), rgba(0, 229, 255, 0.9));
+  color: #fff;
+}
+
+.terminal-btn-clear {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+}
+
+.terminal-btn-ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--cm-terminal-text);
+}
+
+.terminal-btn-ghost:hover,
+.terminal-btn-clear:hover,
+.terminal-btn-run:hover,
+.terminal-lang-selector:hover,
+.terminal-theme-select:hover {
+  border-color: var(--cm-terminal-accent);
+  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.08);
+}
+
+.terminal-editor-wrap,
+.terminal-output-content {
+  color: var(--cm-terminal-text);
+}
+
+.terminal-stdin-input,
+.terminal-lang-selector,
+.terminal-theme-select {
+  background: var(--cm-terminal-surface-2);
+  color: var(--cm-terminal-text);
+  border-color: var(--cm-terminal-border);
+}
+
+.terminal-output-content .terminal-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.terminal-msg.muted,
+.terminal-msg.info {
+  color: var(--cm-terminal-muted);
+}
+
+.terminal-msg.warn {
+  color: #fbbf24;
+}
+
+.terminal-msg.error {
+  color: #fca5a5;
+}
+
+.vsc-term-item {
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.vsc-term-item.active {
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.18);
+}
+
+.vsc-term-status.running {
+  background: var(--cm-terminal-accent);
+}
+
+.vsc-term-status.success {
+  background: var(--cm-terminal-success);
+}
+
+.vsc-term-status.error {
+  background: var(--cm-terminal-danger);
+}
+
+.terminal-resizer {
+  background: linear-gradient(180deg, transparent, rgba(0, 229, 255, 0.22), transparent);
+}

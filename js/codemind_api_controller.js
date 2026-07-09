@@ -687,6 +687,357 @@
       }
     },
 
+    {
+      id: 'wikipedia',
+      label: 'Wikipedia Summary',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/JavaScript');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.extract, msg: d.extract ? `✓ ${d.title}` : 'No summary text' };
+      }
+    },
+
+    {
+      id: 'nasa_apod',
+      label: 'NASA APOD',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.title, msg: d.title ? `✓ ${d.title}` : 'No APOD title' };
+      }
+    },
+
+    {
+      id: 'openlibrary',
+      label: 'Open Library',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://openlibrary.org/search.json?q=javascript&limit=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.docs?.length > 0, msg: d.docs?.length ? `✓ ${d.docs[0].title}` : 'No books found' };
+      }
+    },
+
+    {
+      id: 'jsonplaceholder',
+      label: 'JSONPlaceholder',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.id, msg: d.title ? `✓ Post #${d.id}` : 'No data' };
+      }
+    },
+
+    {
+      id: 'randomuser',
+      label: 'Random User',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://randomuser.me/api/?results=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.results?.length, msg: d.results?.length ? `✓ ${d.results[0].name?.first} ${d.results[0].name?.last}` : 'No user data' };
+      }
+    },
+
+    {
+      id: 'quotable',
+      label: 'Quotable',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.quotable.io/random');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.content, msg: d.content ? `✓ "${String(d.content).slice(0, 40)}..."` : 'No quote' };
+      }
+    },
+
+    {
+      id: 'numbersapi',
+      label: 'Numbers API',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://numbersapi.com/42/trivia?json');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.text, msg: d.text ? `✓ ${String(d.text).slice(0, 48)}...` : 'No trivia text' };
+      }
+    },
+
+    {
+      id: 'opentrivia',
+      label: 'Open Trivia DB',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://opentdb.com/api.php?amount=1&type=multiple&encode=url3986');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d.results) && d.results.length > 0, msg: d.results?.length ? '✓ Trivia loaded' : 'No trivia data' };
+      }
+    },
+
+    {
+      id: 'dogceo',
+      label: 'Dog CEO',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://dog.ceo/api/breeds/image/random');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.status === 'success', msg: d.status === 'success' ? '✓ Dog image ready' : 'No image' };
+      }
+    },
+
+    {
+      id: 'catfact',
+      label: 'Cat Facts',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://catfact.ninja/fact');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.fact, msg: d.fact ? `✓ ${String(d.fact).slice(0, 40)}...` : 'No fact' };
+      }
+    },
+
+    {
+      id: 'agify',
+      label: 'Agify',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.agify.io/?name=michael');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.name === 'michael', msg: d.name ? `✓ ${d.name} → ${d.age ?? '?'}` : 'No prediction' };
+      }
+    },
+
+    {
+      id: 'genderize',
+      label: 'Genderize',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.genderize.io/?name=luc');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name} → ${d.gender ?? 'unknown'}` : 'No prediction' };
+      }
+    },
+
+    {
+      id: 'nationalize',
+      label: 'Nationalize',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.nationalize.io/?name=nathaniel');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name} nationality data` : 'No prediction' };
+      }
+    },
+
+    {
+      id: 'coindesk',
+      label: 'CoinDesk BTC',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.coindesk.com/v1/bpi/currentprice/BTC.json');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.bpi?.USD?.rate_float, msg: d.bpi?.USD?.rate_float ? `✓ BTC ${d.bpi.USD.rate}` : 'No BTC data' };
+      }
+    },
+
+    {
+      id: 'exchangerate_host',
+      label: 'ExchangeRate Host',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.exchangerate.host/latest?base=USD');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.rates?.EUR, msg: d.rates?.EUR ? `✓ USD→EUR ${d.rates.EUR}` : 'No rate data' };
+      }
+    },
+
+    {
+      id: 'sunrise',
+      label: 'Sunrise Sunset',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400&formatted=0');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.status === 'OK', msg: d.status === 'OK' ? '✓ Sun times ready' : 'No sun data' };
+      }
+    },
+
+    {
+      id: 'jikan',
+      label: 'Jikan Anime',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.jikan.moe/v4/anime?q=naruto&limit=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: d.data?.length > 0, msg: d.data?.length ? `✓ ${d.data[0].title}` : 'No anime data' };
+      }
+    },
+
+    {
+      id: 'pokeapi',
+      label: 'PokeAPI',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://pokeapi.co/api/v2/pokemon/pikachu');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name}` : 'No pokemon data' };
+      }
+    },
+
+    {
+      id: 'ipify',
+      label: 'IPify',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.ipify.org?format=json');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.ip, msg: d.ip ? `✓ ${d.ip}` : 'No IP data' };
+      }
+    },
+
+    {
+      id: 'uuid',
+      label: 'UUID Generator',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://www.uuidtools.com/api/generate/v4/count/1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: d.length ? `✓ ${d[0]}` : 'No UUID' };
+      }
+    },
+
+    {
+      id: 'adviceslip',
+      label: 'Advice Slip',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.adviceslip.com/advice');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.slip?.advice, msg: d.slip?.advice ? `✓ ${String(d.slip.advice).slice(0, 40)}...` : 'No advice' };
+      }
+    },
+
+    {
+      id: 'openbrewery',
+      label: 'Open Brewery DB',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.openbrewerydb.org/v1/breweries?per_page=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: d.length ? `✓ ${d[0].name}` : 'No breweries' };
+      }
+    },
+
+    {
+      id: 'chucknorris',
+      label: 'Chuck Norris Jokes',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.chucknorris.io/jokes/random');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.value, msg: d.value ? `✓ ${String(d.value).slice(0, 40)}...` : 'No joke' };
+      }
+    },
+
+    {
+      id: 'dadjoke',
+      label: 'Dad Jokes',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://icanhazdadjoke.com/', { headers: { Accept: 'application/json' } });
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.joke, msg: d.joke ? `✓ ${String(d.joke).slice(0, 40)}...` : 'No joke' };
+      }
+    },
+
+    {
+      id: 'boredapi',
+      label: 'Bored API',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://bored.api.lewagon.com/api/activity');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.activity, msg: d.activity ? `✓ ${String(d.activity).slice(0, 40)}...` : 'No activity' };
+      }
+    },
+
+    {
+      id: 'swapi',
+      label: 'Star Wars API',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://swapi.dev/api/people/1/');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name}` : 'No character data' };
+      }
+    },
+
+    {
+      id: 'datamuse',
+      label: 'Datamuse Words',
+      group: 'Free',
+      needsKey: false,
+      async test() {
+        const res = await fetch('https://api.datamuse.com/words?ml=happy&max=1');
+        if (!res.ok) return { ok: false, msg: `HTTP ${res.status}` };
+        const d = await res.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: d.length ? `✓ ${d[0].word}` : 'No words' };
+      }
+    },
+
   ];
 
   const EXTRA_TESTS = Array.isArray(window.CM_API_EXTRA_TESTS) ? window.CM_API_EXTRA_TESTS : [];

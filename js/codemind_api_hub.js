@@ -960,6 +960,517 @@
       }
     },
 
+    {
+      id: 'wikipedia',
+      label: 'Wikipedia Summary',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/JavaScript');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.extract, msg: d.extract ? `✓ ${d.title}` : 'No summary text' };
+      },
+      async call({ title = 'JavaScript' }) {
+        const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'nasa_apod',
+      label: 'NASA APOD',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.title, msg: d.title ? `✓ ${d.title}` : 'No APOD title' };
+      },
+      async call({ date = '', count = '' } = {}) {
+        const params = new URLSearchParams({ api_key: 'DEMO_KEY' });
+        if (count) params.set('count', String(count));
+        else if (date) params.set('date', String(date));
+        const r = await fetch(`https://api.nasa.gov/planetary/apod?${params.toString()}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'openlibrary',
+      label: 'Open Library',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://openlibrary.org/search.json?q=javascript&limit=1');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: d.docs?.length > 0, msg: d.docs?.length ? `✓ ${d.docs[0].title}` : 'No books found' };
+      },
+      async call({ query = 'javascript', limit = 10 }) {
+        const r = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(limit)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'jsonplaceholder',
+      label: 'JSONPlaceholder',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.id, msg: d.title ? `✓ Post #${d.id}` : 'No data' };
+      },
+      async call({ resource = 'posts', id = 1 } = {}) {
+        const r = await fetch(`https://jsonplaceholder.typicode.com/${encodeURIComponent(resource)}/${encodeURIComponent(id)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'randomuser',
+      label: 'Random User',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://randomuser.me/api/?results=1');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.results?.length, msg: d.results?.length ? `✓ ${d.results[0].name?.first} ${d.results[0].name?.last}` : 'No user data' };
+      },
+      async call({ results = 5, nat = '' } = {}) {
+        const params = new URLSearchParams({ results: String(results) });
+        if (nat) params.set('nat', nat);
+        params.set('inc', 'name,email,phone,location,picture,login,dob,nat');
+        const r = await fetch(`https://randomuser.me/api/?${params.toString()}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'quotable',
+      label: 'Quotable',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.quotable.io/random');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.content, msg: d.content ? `✓ "${String(d.content).slice(0, 40)}..."` : 'No quote' };
+      },
+      async call({ tags = '', author = '' } = {}) {
+        const params = new URLSearchParams();
+        if (tags) params.set('tags', tags);
+        if (author) params.set('author', author);
+        const url = params.toString() ? `https://api.quotable.io/quotes/random?${params.toString()}` : 'https://api.quotable.io/random';
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'numbersapi',
+      label: 'Numbers API',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://numbersapi.com/42/trivia?json');
+        return { ok: r.ok, msg: r.ok ? '✓ Numbers API reachable' : `HTTP ${r.status}` };
+      },
+      async call({ number = 42, type = 'trivia' } = {}) {
+        const r = await fetch(`https://numbersapi.com/${encodeURIComponent(number)}/${encodeURIComponent(type)}?json`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'opentrivia',
+      label: 'Open Trivia DB',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://opentdb.com/api.php?amount=1&type=multiple&encode=url3986');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: Array.isArray(d.results) && d.results.length > 0, msg: d.results?.length ? '✓ Trivia loaded' : 'No trivia data' };
+      },
+      async call({ amount = 5, category = '', difficulty = '' } = {}) {
+        const params = new URLSearchParams({ amount: String(amount), type: 'multiple', encode: 'url3986' });
+        if (category) params.set('category', category);
+        if (difficulty) params.set('difficulty', difficulty);
+        const r = await fetch(`https://opentdb.com/api.php?${params.toString()}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'dogceo',
+      label: 'Dog CEO',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://dog.ceo/api/breeds/image/random');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: d.status === 'success', msg: d.status === 'success' ? '✓ Dog image ready' : 'No image' };
+      },
+      async call() {
+        const r = await fetch('https://dog.ceo/api/breeds/image/random');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'catfact',
+      label: 'Cat Facts',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://catfact.ninja/fact');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.fact, msg: d.fact ? `✓ ${String(d.fact).slice(0, 40)}...` : 'No fact' };
+      },
+      async call() {
+        const r = await fetch('https://catfact.ninja/fact');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'agify',
+      label: 'Agify',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.agify.io/?name=michael');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: d.name === 'michael', msg: d.name ? `✓ ${d.name} → ${d.age ?? '?'} ` : 'No prediction' };
+      },
+      async call({ name = 'michael' } = {}) {
+        const r = await fetch(`https://api.agify.io/?name=${encodeURIComponent(name)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'genderize',
+      label: 'Genderize',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.genderize.io/?name=luc');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name} → ${d.gender ?? 'unknown'}` : 'No prediction' };
+      },
+      async call({ name = 'luc' } = {}) {
+        const r = await fetch(`https://api.genderize.io/?name=${encodeURIComponent(name)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'nationalize',
+      label: 'Nationalize',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.nationalize.io/?name=nathaniel');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name} nationality data` : 'No prediction' };
+      },
+      async call({ name = 'nathaniel' } = {}) {
+        const r = await fetch(`https://api.nationalize.io/?name=${encodeURIComponent(name)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'coindesk',
+      label: 'CoinDesk BTC',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.coindesk.com/v1/bpi/currentprice/BTC.json');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.bpi?.USD?.rate_float, msg: d.bpi?.USD?.rate_float ? `✓ BTC ${d.bpi.USD.rate}` : 'No BTC data' };
+      },
+      async call() {
+        const r = await fetch('https://api.coindesk.com/v1/bpi/currentprice/BTC.json');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'exchangerate_host',
+      label: 'ExchangeRate Host',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.exchangerate.host/latest?base=USD');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.rates?.EUR, msg: d.rates?.EUR ? `✓ USD→EUR ${d.rates.EUR}` : 'No rate data' };
+      },
+      async call({ base = 'USD', symbols = 'EUR,INR' } = {}) {
+        const r = await fetch(`https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}&symbols=${encodeURIComponent(symbols)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'sunrise',
+      label: 'Sunrise Sunset',
+      group: 'Geo',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400&formatted=0');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: d.status === 'OK', msg: d.status === 'OK' ? '✓ Sun times ready' : 'No sun data' };
+      },
+      async call({ lat, lng, date = 'today' } = {}) {
+        const params = new URLSearchParams({ formatted: '0', date });
+        if (lat !== undefined && lng !== undefined) {
+          params.set('lat', String(lat));
+          params.set('lng', String(lng));
+        }
+        const r = await fetch(`https://api.sunrise-sunset.org/json?${params.toString()}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'jikan',
+      label: 'Jikan Anime',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.jikan.moe/v4/anime?q=naruto&limit=1');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: d.data?.length > 0, msg: d.data?.length ? `✓ ${d.data[0].title}` : 'No anime data' };
+      },
+      async call({ query = 'naruto', limit = 10 } = {}) {
+        const r = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(limit)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'pokeapi',
+      label: 'PokeAPI',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://pokeapi.co/api/v2/pokemon/pikachu');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name}` : 'No pokemon data' };
+      },
+      async call({ name = 'pikachu' } = {}) {
+        const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(name)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'ipify',
+      label: 'IPify',
+      group: 'Geo',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.ipify.org?format=json');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.ip, msg: d.ip ? `✓ ${d.ip}` : 'No IP data' };
+      },
+      async call() {
+        const r = await fetch('https://api.ipify.org?format=json');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'uuid',
+      label: 'UUID Generator',
+      group: 'Dev',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://www.uuidtools.com/api/generate/v4/count/1');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: d.length ? `✓ ${d[0]}` : 'No UUID' };
+      },
+      async call({ count = 1 } = {}) {
+        const r = await fetch(`https://www.uuidtools.com/api/generate/v4/count/${encodeURIComponent(count)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'adviceslip',
+      label: 'Advice Slip',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.adviceslip.com/advice');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.slip?.advice, msg: d.slip?.advice ? `✓ ${String(d.slip.advice).slice(0, 40)}...` : 'No advice' };
+      },
+      async call() {
+        const r = await fetch('https://api.adviceslip.com/advice');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'openbrewery',
+      label: 'Open Brewery DB',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.openbrewerydb.org/v1/breweries?per_page=1');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: d.length ? `✓ ${d[0].name}` : 'No breweries' };
+      },
+      async call({ query = '', perPage = 10 } = {}) {
+        const url = query
+          ? `https://api.openbrewerydb.org/v1/breweries/search?query=${encodeURIComponent(query)}`
+          : `https://api.openbrewerydb.org/v1/breweries?per_page=${encodeURIComponent(perPage)}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'chucknorris',
+      label: 'Chuck Norris Jokes',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.chucknorris.io/jokes/random');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.value, msg: d.value ? `✓ ${String(d.value).slice(0, 40)}...` : 'No joke' };
+      },
+      async call({ category = '' } = {}) {
+        const url = category ? `https://api.chucknorris.io/jokes/random?category=${encodeURIComponent(category)}` : 'https://api.chucknorris.io/jokes/random';
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'dadjoke',
+      label: 'Dad Jokes',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://icanhazdadjoke.com/', { headers: { Accept: 'application/json' } });
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.joke, msg: d.joke ? `✓ ${String(d.joke).slice(0, 40)}...` : 'No joke' };
+      },
+      async call() {
+        const r = await fetch('https://icanhazdadjoke.com/', { headers: { Accept: 'application/json' } });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'boredapi',
+      label: 'Bored API',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://bored.api.lewagon.com/api/activity');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.activity, msg: d.activity ? `✓ ${String(d.activity).slice(0, 40)}...` : 'No activity' };
+      },
+      async call({ type = '', participants = '' } = {}) {
+        let url = 'https://bored.api.lewagon.com/api/activity';
+        const params = new URLSearchParams();
+        if (type) params.set('type', type);
+        if (participants) params.set('participants', String(participants));
+        if (params.toString()) url += `?${params.toString()}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'swapi',
+      label: 'Star Wars API',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://swapi.dev/api/people/1/');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: !!d.name, msg: d.name ? `✓ ${d.name}` : 'No character data' };
+      },
+      async call({ resource = 'people', id = 1 } = {}) {
+        const r = await fetch(`https://swapi.dev/api/${encodeURIComponent(resource)}/${encodeURIComponent(id)}/`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
+    {
+      id: 'datamuse',
+      label: 'Datamuse Words',
+      group: 'Data',
+      needsKey: false,
+      async ping() {
+        const r = await fetch('https://api.datamuse.com/words?ml=happy&max=1');
+        if (!r.ok) return { ok: false, msg: `HTTP ${r.status}` };
+        const d = await r.json();
+        return { ok: Array.isArray(d) && d.length > 0, msg: d.length ? `✓ ${d[0].word}` : 'No words' };
+      },
+      async call({ query = 'happy', max = 10 } = {}) {
+        const r = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(query)}&max=${encodeURIComponent(max)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+    },
+
   ]; // end REGISTRY
 
   /* Build a quick lookup map */
