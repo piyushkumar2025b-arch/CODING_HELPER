@@ -121,6 +121,8 @@ if _secrets_file_exists():
         "cm_cloudflare_key":  "CLOUDFLARE_API_TOKEN",
         "cm_cohere_key":      "COHERE_API_KEY",
         "cm_deepseek_key":    "DEEPSEEK_API_KEY",
+        "cm_supabase_url":    "SUPABASE_URL",
+        "cm_supabase_anon":   "SUPABASE_ANON_KEY",
     }
     for _js_key, _secret_name in _KEY_MAP.items():
         try:
@@ -136,7 +138,7 @@ def _inject_secrets(html: str) -> str:
         return html
     script = (
         "<script>"
-        + "".join(f"localStorage.setItem({json.dumps(k)},{json.dumps(v)});" for k, v in _SECRETS.items())
+        + "".join(f"localStorage.setItem({json.dumps(k)},{json.dumps(v)});window[{json.dumps('CODEMIND_' + k[3:].upper())}]={json.dumps(v)};" for k, v in _SECRETS.items())
         + "</script>"
     )
     return html.replace("<body>", f"<body>{script}", 1)

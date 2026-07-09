@@ -22590,7 +22590,22 @@ function setOutput(text, type, elapsed, status, time, mem) {
   const isLocalHost = ['localhost', '127.0.0.1', '::1', ''].includes(location.hostname);
   const localDbEnabled = isLocalHost && !isCloudStreamlit && ('indexedDB' in window);
   const localDbUrl = window.CODEMIND_LOCAL_DB_URL || 'http://127.0.0.1:8787';
+  const supabaseUrl = window.CODEMIND_SUPABASE_URL || localStorage.getItem('cm_supabase_url') || '';
+  const supabaseAnonKey = window.CODEMIND_SUPABASE_ANON_KEY || localStorage.getItem('cm_supabase_anon') || '';
+  const supabaseEnabled = !!(supabaseUrl && supabaseAnonKey);
+  const supabaseRestUrl = supabaseEnabled ? `${supabaseUrl.replace(/\/$/, '')}/rest/v1` : '';
+  const supabaseAuthUrl = supabaseEnabled ? `${supabaseUrl.replace(/\/$/, '')}/auth/v1` : '';
+  const SUPABASE_TABLE = 'codemind_conversations';
+  const SUPABASE_HEADERS = supabaseEnabled ? {
+    'apikey': supabaseAnonKey,
+    'Authorization': `Bearer ${supabaseAnonKey}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  } : {};
   let sqliteAvailable = false;
+  let supabaseSession = null;
+  let supabaseUser = null;
+  let supabaseReady = false;
   let dbPromise = null;
 
   function ready(fn) {
@@ -22693,6 +22708,149 @@ function setOutput(text, type, elapsed, status, time, mem) {
     }
   }
 
+  async function supabaseRequest(path, init = {}) {
+    if (!supabaseEnabled) return null;
+    const headers = { ...SUPABASE_HEADERS, ...(init.headers || {}) };
+    if (supabaseSession?.access_token) {
+      headers.Authorization = `Bearer ${supabaseSession.access_token}`;
+    }
+    const res = await fetch(`${supabaseRestUrl}${path}`, { ...init, headers });
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  function supabaseSessionKey() {
+    return 'sb-codemind-session';
+  }
+
+  async function supabaseGetSession() {
+    if (!supabaseEnabled) return null;
+    try {
+      const raw = localStorage.getItem(supabaseSessionKey());
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.access_token) {
+          supabaseSession = parsed;
+          return parsed;
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function persistSupabaseSession(session) {
+    supabaseSession = session || null;
+    try {
+      if (session) localStorage.setItem(supabaseSessionKey(), JSON.stringify(session));
+      else localStorage.removeItem(supabaseSessionKey());
+    } catch (_) {}
+  }
+
+  async function supabaseInitializeAuth() {
+    if (!supabaseEnabled || supabaseReady) return;
+    supabaseReady = true;
+    const saved = await supabaseGetSession();
+    supabaseUser = saved?.user || null;
+  }
+
+  async function supabaseSignUpOrIn(email, password, mode = 'signin') {
+    if (!supabaseEnabled) throw new Error('Supabase is not configured.');
+    const endpoint = mode === 'signup' ? '/signup' : '/token?grant_type=password';
+    const res = await fetch(`${supabaseAuthUrl}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseAnonKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.msg || data?.error_description || data?.error || 'Failed to authenticate.');
+    if (data?.access_token) {
+      persistSupabaseSession(data);
+      supabaseUser = data.user || null;
+    }
+    return data;
+  }
+
+  async function supabaseSignOut() {
+    persistSupabaseSession(null);
+    supabaseUser = null;
+  }
+
+  async function supabaseList() {
+    if (!supabaseEnabled || !supabaseSession?.access_token) return null;
+    const res = await supabaseRequest(`/${SUPABASE_TABLE}?select=*&order=created_at.desc`);
+    if (!res?.ok) return null;
+    return (res.data || []).map(normalizeSupabaseConversation);
+  }
+
+  async function supabaseSave(item) {
+    if (!supabaseEnabled || !supabaseSession?.access_token) return false;
+    const payload = supabasePayload(item);
+    const res = await supabaseRequest(`/${SUPABASE_TABLE}`, {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify(payload)
+    });
+    return !!res?.ok;
+  }
+
+  async function supabaseClear() {
+    if (!supabaseEnabled || !supabaseSession?.access_token) return false;
+    const rows = await supabaseList();
+    if (!rows?.length) return true;
+    const ids = rows.map((row) => row.id).filter(Boolean);
+    if (!ids.length) return false;
+    const res = await supabaseRequest(`/${SUPABASE_TABLE}?id=in.(${ids.map((id) => encodeURIComponent(id)).join(',')})`, {
+      method: 'DELETE',
+      headers: { Prefer: 'return=minimal' }
+    });
+    return !!res?.ok;
+  }
+
+  function supabasePayload(item) {
+    return {
+      id: item.id,
+      user_id: supabaseUser?.id || supabaseSession?.user?.id || null,
+      created_at: new Date(item.createdAt || Date.now()).toISOString(),
+      status: item.status || 'unknown',
+      mode: item.mode || '',
+      language: item.language || '',
+      platform: item.platform || '',
+      answer_type: item.answerType || '',
+      question: item.question || '',
+      code_input: item.codeInput || '',
+      editor_code: item.editorCode || '',
+      response_text: item.responseText || '',
+      response_html: item.responseHtml || '',
+      error_message: item.errorMessage || '',
+      payload_json: JSON.stringify(item)
+    };
+  }
+
+  function normalizeSupabaseConversation(row) {
+    try {
+      if (row.payload_json) return JSON.parse(row.payload_json);
+    } catch (_) {}
+    return {
+      id: row.id,
+      createdAt: row.created_at ? Date.parse(row.created_at) || Date.now() : Date.now(),
+      status: row.status || 'unknown',
+      mode: row.mode || '',
+      language: row.language || '',
+      platform: row.platform || '',
+      answerType: row.answer_type || '',
+      question: row.question || '',
+      codeInput: row.code_input || '',
+      editorCode: row.editor_code || '',
+      responseText: row.response_text || '',
+      responseHtml: row.response_html || '',
+      errorMessage: row.error_message || ''
+    };
+  }
+
   function val(id) {
     return document.getElementById(id)?.value || '';
   }
@@ -22723,7 +22881,7 @@ function setOutput(text, type, elapsed, status, time, mem) {
   }
 
   async function saveConversation(before, status, errorMessage) {
-    if (!localDbEnabled) return;
+    if (!localDbEnabled && !supabaseEnabled) return;
     const responseText = text('responsePanel').trim();
     const hasContent = before.question || before.codeInput || before.editorCode || responseText || errorMessage;
     if (!hasContent) return;
@@ -22738,8 +22896,9 @@ function setOutput(text, type, elapsed, status, time, mem) {
       ...before
     };
 
-    const savedToSqlite = await sqliteSave(item);
-    if (!savedToSqlite) {
+    const savedToSupabase = await supabaseSave(item).catch(() => false);
+    const savedToSqlite = savedToSupabase ? true : await sqliteSave(item);
+    if (!savedToSupabase && !savedToSqlite) {
       await dbWrite(CONVERSATIONS, 'readwrite', store => store.put(item)).catch(() => null);
     }
     renderDbBadge();
@@ -22891,8 +23050,8 @@ function setOutput(text, type, elapsed, status, time, mem) {
   }
 
   async function renderDbBadge() {
-    if (!localDbEnabled) return;
-    const rows = (await sqliteList()) || (await dbReadAll().catch(() => []));
+    if (!localDbEnabled && !supabaseEnabled) return;
+    const rows = (await supabaseList()) || (await sqliteList()) || (await dbReadAll().catch(() => []));
     const count = rows.length;
     let badge = document.getElementById('cm-local-db-badge');
     if (!badge) {
@@ -22919,24 +23078,28 @@ function setOutput(text, type, elapsed, status, time, mem) {
       badge.onclick = showDbPanel;
       document.body.appendChild(badge);
     }
-    badge.textContent = `${sqliteAvailable ? 'SQLite DB' : 'Local DB'} ${count}`;
+    badge.textContent = supabaseEnabled && supabaseSession?.access_token
+      ? `Supabase DB ${count}`
+      : `${sqliteAvailable ? 'SQLite DB' : 'Local DB'} ${count}`;
     badge.title = isLocalHost
       ? sqliteAvailable
         ? 'SQLite database is saving conversations on this laptop'
         : 'Browser database is saving conversations on this local browser'
+      : supabaseEnabled && supabaseSession?.access_token
+        ? `Signed into Supabase as ${supabaseUser?.email || 'unknown user'}`
       : isStreamlit
         ? 'Local Streamlit run: conversations are saved in this browser database'
         : 'IndexedDB is active for this browser profile';
   }
 
   async function showDbPanel() {
-    if (!localDbEnabled) {
+    if (!localDbEnabled && !supabaseEnabled) {
       showDatabaseUnavailableNotice();
       return;
     }
     const old = document.getElementById('cm-local-db-panel');
     if (old) { old.remove(); return; }
-    const rows = (await sqliteList()) || (await dbReadAll().catch(() => []));
+    const rows = (await supabaseList()) || (await sqliteList()) || (await dbReadAll().catch(() => []));
     const panel = document.createElement('div');
     panel.id = 'cm-local-db-panel';
     panel.className = 'cm-glass';
@@ -22958,10 +23121,11 @@ function setOutput(text, type, elapsed, status, time, mem) {
 
     panel.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px">
       <div>
-        <div style="font-size:12px;font-weight:900;color:var(--accent3)">Local Conversation Database</div>
-        <div style="font-size:10px;color:var(--muted);line-height:1.5">${sqliteAvailable ? 'Saving to local SQLite on this laptop.' : 'Saving to this local browser database.'}</div>
+        <div style="font-size:12px;font-weight:900;color:var(--accent3)">${supabaseEnabled && supabaseSession?.access_token ? 'Supabase Conversation Database' : 'Local Conversation Database'}</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.5">${supabaseEnabled && supabaseSession?.access_token ? `Signed in as ${supabaseUser?.email || 'a Supabase user'}.` : sqliteAvailable ? 'Saving to local SQLite on this laptop.' : 'Saving to this local browser database.'}</div>
       </div>
       <div style="display:flex;gap:6px">
+        ${supabaseEnabled ? `<button type="button" id="cm-db-auth" style="border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.12);color:#bfdbfe;border-radius:6px;padding:6px 8px;cursor:pointer">${supabaseSession?.access_token ? 'Sign out' : 'Sign in'}</button>` : ''}
         <button type="button" id="cm-db-export" style="border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:6px;padding:6px 8px;cursor:pointer">Export</button>
         <button type="button" id="cm-db-clear" style="border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.12);color:#fca5a5;border-radius:6px;padding:6px 8px;cursor:pointer">Clear</button>
         <button type="button" onclick="document.getElementById('cm-local-db-panel')?.remove()" style="border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:6px;padding:6px 8px;cursor:pointer">Close</button>
@@ -22970,6 +23134,25 @@ function setOutput(text, type, elapsed, status, time, mem) {
     <div id="cm-db-rows">${rows.length ? rows.map(renderConversationRow).join('') : '<div style="padding:18px;color:var(--muted);font-size:11px;text-align:center;border-top:1px solid rgba(255,255,255,.06)">No conversations saved yet. Ask CodeMind once and it will appear here.</div>'}</div>`;
 
     document.body.appendChild(panel);
+    document.getElementById('cm-db-auth')?.addEventListener('click', async () => {
+      if (supabaseSession?.access_token) {
+        await supabaseSignOut();
+      } else {
+        const email = prompt('Enter your Supabase email:');
+        if (!email) return;
+        const password = prompt('Enter your Supabase password:');
+        if (!password) return;
+        try {
+          const nextMode = confirm('Press OK to sign up, or Cancel to sign in with the password you already created.');
+          await supabaseSignUpOrIn(email.trim(), password, nextMode ? 'signup' : 'signin');
+          alert('Supabase sign-in complete.');
+        } catch (error) {
+          alert(error?.message || 'Could not start Supabase sign-in.');
+        }
+      }
+      document.getElementById('cm-local-db-panel')?.remove();
+      renderDbBadge();
+    });
     document.getElementById('cm-db-export')?.addEventListener('click', () => exportDb(rows));
     document.getElementById('cm-db-clear')?.addEventListener('click', clearDb);
     document.getElementById('cm-db-rows')?.addEventListener('click', event => {
@@ -23010,8 +23193,9 @@ function setOutput(text, type, elapsed, status, time, mem) {
 
   async function clearDb() {
     if (!confirm('Clear all locally saved CodeMind conversations from this browser?')) return;
-    const clearedSqlite = await sqliteClear();
-    if (!clearedSqlite) {
+    const clearedSupabase = await supabaseClear().catch(() => false);
+    const clearedSqlite = clearedSupabase ? true : await sqliteClear();
+    if (!clearedSupabase && !clearedSqlite) {
       await dbWrite(CONVERSATIONS, 'readwrite', store => store.clear()).catch(() => null);
     }
     document.getElementById('cm-local-db-panel')?.remove();
@@ -23037,13 +23221,16 @@ function setOutput(text, type, elapsed, status, time, mem) {
     installAskWrapper();
     setTimeout(installAskWrapper, 700);
     showStreamlitNotice();
-    checkSqlite().finally(renderDbBadge);
+    supabaseInitializeAuth().finally(() => checkSqlite().finally(renderDbBadge));
   }
 
   window.CodeMindSite = {
     localDbEnabled,
+    supabaseEnabled,
     sqliteAvailable: () => sqliteAvailable,
     isLocalHost,
+    signInWithSupabase: supabaseSignUpOrIn,
+    signOutSupabase: supabaseSignOut,
     saveConversation,
     listConversations: dbReadAll,
     restoreConversation,

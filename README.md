@@ -220,6 +220,64 @@ local_data/
 *.sqlite3-journal
 ```
 
+### Supabase Database And Auth
+
+CodeMind can also use Supabase for both authentication and conversation storage.
+
+When Supabase is configured:
+
+- users sign in with email and password
+- saved conversations are written to Supabase instead of the local database
+- the local SQLite database stays available as a fallback if Supabase is not configured
+
+Set these Streamlit secrets before launching the app:
+
+```toml
+SUPABASE_URL = "https://YOUR-PROJECT.supabase.co"
+SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"
+```
+
+Supabase table setup:
+
+```sql
+create table if not exists public.codemind_conversations (
+  id text primary key,
+  user_id uuid null references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  status text not null,
+  mode text,
+  language text,
+  platform text,
+  answer_type text,
+  question text,
+  code_input text,
+  editor_code text,
+  response_text text,
+  response_html text,
+  error_message text,
+  payload_json jsonb not null
+);
+
+alter table public.codemind_conversations enable row level security;
+
+create policy "Users can read their own conversations"
+on public.codemind_conversations
+for select
+using (auth.uid() = user_id);
+
+create policy "Users can insert their own conversations"
+on public.codemind_conversations
+for insert
+with check (auth.uid() = user_id);
+
+create policy "Users can delete their own conversations"
+on public.codemind_conversations
+for delete
+using (auth.uid() = user_id);
+```
+
+If you want shared or admin-style access, we can adjust the RLS rules to match your use case.
+
 ## Streamlit Deployment
 
 Deploy this repository with:
